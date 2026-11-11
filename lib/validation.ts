@@ -46,7 +46,7 @@ export const employeeCreateSchema = z
     status: statusField,
     avatarUrl: avatarUrlField,
     /** موجودی اولیه؛ اگر بزرگ‌تر از صفر باشد یک تراکنش grant ساخته می‌شود. */
-    initialTokens: z.coerce
+    initialTokens: z
       .number("موجودی اولیه باید عدد باشد.")
       .int("موجودی اولیه باید عدد صحیح باشد.")
       .min(0, "موجودی اولیه نمی‌تواند منفی باشد.")
@@ -64,18 +64,22 @@ export const employeeUpdateSchema = z
   })
   .strict();
 
+/**
+ * ورودی این اسکیما JSON است، پس `z.number()` بدون coerce تا نوع ورودی و
+ * خروجی یکی بماند و مستقیم به React Hook Form داده شود.
+ */
 export const transactionCreateSchema = z
   .object({
-    employeeId: z.coerce.number("شناسه‌ی همکار نامعتبر است.").int().positive(),
+    employeeId: z.number("شناسه‌ی همکار نامعتبر است.").int().positive(),
     type: z.enum(["spend", "grant"], "نوع تراکنش نامعتبر است."),
-    tokens: z.coerce
-      .number("تعداد توکن نامعتبر است.")
+    tokens: z
+      .number("تعداد توکن باید عدد باشد.")
       .int("تعداد توکن باید عدد صحیح باشد.")
       .min(1, "تعداد توکن باید حداقل ۱ باشد.")
       .max(100000, "تعداد توکن حداکثر می‌تواند ۱۰۰٬۰۰۰ باشد."),
     /** برای grant سرور خودش محاسبه می‌کند؛ برای spend کاربر می‌تواند دستی وارد کند. */
-    amountRial: z.coerce
-      .number("مبلغ نامعتبر است.")
+    amountRial: z
+      .number("مبلغ باید عدد باشد.")
       .int("مبلغ باید عدد صحیح باشد.")
       .min(1, "مبلغ باید بزرگ‌تر از صفر باشد.")
       .max(1000000000, "مبلغ خیلی زیاد است.")
