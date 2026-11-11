@@ -1,0 +1,39 @@
+import { index, integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
+
+/** همکاران. موجودی اینجا ذخیره نمی‌شود؛ همیشه از تراکنش‌ها محاسبه می‌شود. */
+export const employees = sqliteTable("employees", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  personnelCode: text("personnel_code").notNull().unique(),
+  fullName: text("full_name").notNull(),
+  avatarUrl: text("avatar_url"),
+  status: text("status", { enum: ["active", "inactive"] })
+    .notNull()
+    .default("active"),
+  /** soft delete — تاریخچه‌ی تراکنش‌ها حفظ می‌شود. */
+  deletedAt: integer("deleted_at", { mode: "timestamp_ms" }),
+  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+});
+
+export const transactions = sqliteTable(
+  "transactions",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    employeeId: integer("employee_id")
+      .notNull()
+      .references(() => employees.id),
+    type: text("type", { enum: ["spend", "grant"] }).notNull(),
+    /** همیشه مثبت. */
+    tokens: integer("tokens").notNull(),
+    /** همیشه مثبت. */
+    amountRial: integer("amount_rial").notNull(),
+    description: text("description").notNull(),
+    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (table) => [
+    index("transactions_employee_created_idx").on(table.employeeId, table.createdAt),
+    index("transactions_created_at_idx").on(table.createdAt),
+  ],
+);
+
+export type EmployeeRow = typeof employees.$inferSelect;
+export type TransactionRow = typeof transactions.$inferSelect;

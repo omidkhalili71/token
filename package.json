@@ -3,12 +3,12 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "node scripts/ensure-db.mjs && next dev",
-    "build": "node scripts/ensure-db.mjs && next build",
+    "dev": "tsx scripts/ensure-db.ts && next dev",
+    "build": "tsx scripts/ensure-db.ts && next build",
     "start": "next start",
-    "db:migrate": "node scripts/migrate.mjs",
-    "db:seed": "node scripts/seed.mjs",
-    "db:reset": "node scripts/reset.mjs",
+    "db:migrate": "tsx scripts/migrate.ts",
+    "db:seed": "tsx scripts/seed.ts",
+    "db:reset": "tsx scripts/reset.ts",
     "db:generate": "drizzle-kit generate",
     "test": "vitest run",
     "test:watch": "vitest"
@@ -34,6 +34,7 @@
     "@types/react-dom": "19.2.3",
     "drizzle-kit": "0.31.11",
     "tailwindcss": "4.3.5",
+    "tsx": "^4.23.15",
     "typescript": "5.9.3",
     "vitest": "5.1.0"
   }
