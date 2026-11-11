@@ -4,6 +4,7 @@ import { useState } from "react";
 import { EmployeesSection } from "@/components/employees-section";
 import { StatCards } from "@/components/stat-cards";
 import { TransactionModal } from "@/components/transaction-modal";
+import { TransactionsSection } from "@/components/transactions-section";
 import { useDebouncedValue } from "@/lib/client/use-debounced-value";
 import type { EmployeeDto, TransactionType } from "@/lib/dto";
 
@@ -31,6 +32,7 @@ export function Dashboard() {
           onGrant: (employee) => setTransactionTarget({ employee, mode: "grant" }),
         }}
       />
+      <TransactionsSection />
       <p className="sr-only" aria-live="polite">
         {debouncedSearch ? `جستجو: ${debouncedSearch}` : ""}
       </p>

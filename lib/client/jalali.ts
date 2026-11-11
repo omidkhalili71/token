@@ -1,0 +1,77 @@
+import {
+  addDays,
+  addMonths,
+  differenceInCalendarDays,
+  endOfMonth,
+  format,
+  getDaysInMonth,
+  startOfMonth,
+  startOfWeek,
+} from "date-fns-jalali";
+import { toPersianDigits } from "@/lib/format";
+
+/** همه‌ی توابع اینجا Jalali-aware هستند (date-fns-jalali) و بر اساس منطقه‌ی زمانی محلی کار می‌کنند. */
+
+export const PERSIAN_WEEKDAYS = ["ش", "ی", "د", "س", "چ", "پ", "ج"];
+
+export type PersianRange = { from: Date; to: Date };
+
+/** بازه‌ی ماه جاری شمسی — پیش‌فرض فیلتر تاریخچه. */
+export function currentPersianMonth(reference = new Date()): PersianRange {
+  return { from: startOfMonth(reference), to: endOfMonth(reference) };
+}
+
+export function formatJalaliDateTime(value: string | Date): string {
+  const date = typeof value === "string" ? new Date(value) : value;
+  return toPersianDigits(format(date, "yyyy/MM/dd - HH:mm"));
+}
+
+export function formatJalaliDate(value: string | Date): string {
+  const date = typeof value === "string" ? new Date(value) : value;
+  return toPersianDigits(format(date, "yyyy/MM/dd"));
+}
+
+/** عنوان ماه و سال شمسی برای هدر تقویم: «آبان ۱۴۰۵» */
+export function formatJalaliMonthTitle(value: Date): string {
+  return toPersianDigits(format(value, "MMMM yyyy"));
+}
+
+/**
+ * خانه‌های شبکه‌ی تقویم. هفته از شنبه شروع می‌شود و روزهای ماه قبل/بعد
+ * هم می‌آیند تا شبکه پر بماند (با پرچم `outside` متمایز می‌شوند).
+ */
+export function monthGrid(cursor: Date): { date: Date; outside: boolean }[] {
+  const first = startOfMonth(cursor);
+  const last = endOfMonth(cursor);
+  const gridStart = startOfWeek(first, { weekStartsOn: 6 });
+
+  // تعداد خانه‌ها به‌جای محاسبه‌ی «آخرین هفته» از خود ماه می‌آید:
+  // روزهای قبل از شروع ماه + روزهای ماه، گرد شده به مضربی از ۷.
+  const leadingDays = differenceInCalendarDays(first, gridStart);
+  const monthDays = getDaysInMonth(cursor);
+  const cells = Math.ceil((leadingDays + monthDays) / 7) * 7;
+
+  return Array.from({ length: cells }, (_, index) => {
+    const date = addDays(gridStart, index);
+    return { date, outside: date < first || date > last };
+  });
+}
+
+export function shiftMonth(cursor: Date, delta: number): Date {
+  return addMonths(cursor, delta);
+}
+
+export function isSameDay(a: Date, b: Date): boolean {
+  return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+}
+
+export function isWithinDay(value: Date, day: Date): boolean {
+  return isSameDay(value, day);
+}
+
+/** یک روز را به ISO میلادی تبدیل می‌کند؛ مرز پایانی روز را سرور clamp می‌کند. */
+export function dayToIso(day: Date): string {
+  const start = new Date(day);
+  start.setHours(0, 0, 0, 0);
+  return start.toISOString();
+}
