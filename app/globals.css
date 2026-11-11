@@ -1,0 +1,60 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Vazirmatn Variable", "Vazirmatn", ui-sans-serif, system-ui, sans-serif;
+
+  --color-canvas: #eef0f7;
+  --color-card: #ffffff;
+  --color-ink: #1e2233;
+  --color-muted: #6f7688;
+  --color-line: #e7e9f2;
+
+  --color-primary: #6b4ce6;
+  --color-primary-hover: #5939d4;
+  --color-primary-soft: #ece8fd;
+  --color-primary-ink: #4c2fb8;
+
+  --color-success: #16a34a;
+  --color-success-soft: #dcfce7;
+  --color-danger: #dc2626;
+  --color-danger-soft: #fee2e2;
+
+  --color-info: #2563eb;
+  --color-info-soft: #dbeafe;
+  --color-warn: #ea580c;
+  --color-warn-soft: #ffedd5;
+
+  --radius-card: 1.25rem;
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--color-canvas);
+    color: var(--color-ink);
+    font-feature-settings: "ss01";
+  }
+
+  /* اعداد داخل جدول‌ها هم‌عرض باشند تا ستون‌ها نلرزند. */
+  table {
+    font-variant-numeric: tabular-nums;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+
+  /* اسکرول‌بار نازک برای جدول‌ها در موبایل. */
+  .thin-scroll::-webkit-scrollbar {
+    height: 6px;
+  }
+
+  .thin-scroll::-webkit-scrollbar-thumb {
+    background: #cdd1e0;
+    border-radius: 9999px;
+  }
+}
