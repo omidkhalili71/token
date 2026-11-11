@@ -87,9 +87,13 @@ export function TransactionModal({
   const onSubmit = handleSubmit((values) => {
     mutation.mutate(values, {
       onSuccess: (result) => {
+        const tokens = formatNumber(values.tokens);
+        const balance = formatNumber(result.balanceAfter);
         toast(
           "success",
-          `${formatNumber(values.tokens)} توکن ${isSpend ? "خرج" : "اهدای"} ${employee.fullName} شد. موجودی جدید: ${formatNumber(result.balanceAfter)} توکن`,
+          isSpend
+            ? `${tokens} توکن از موجودی ${employee.fullName} خرج شد. موجودی جدید: ${balance} توکن`
+            : `${tokens} توکن به ${employee.fullName} اضافه شد. موجودی جدید: ${balance} توکن`,
         );
         onClose();
       },
@@ -98,10 +102,11 @@ export function TransactionModal({
   });
 
   return (
-    <Modal title={isSpend ? "خرج کردن توکن" : "اهدای توکن"} onClose={onClose}>
+    <Modal title={isSpend ? "خرج کردن توکن" : "ثبت توکن"} onClose={onClose}>
       <form onSubmit={onSubmit} noValidate>
         <div className="grid gap-5 sm:grid-cols-2">
-          <div className="order-1 sm:order-2">
+          {/* در RTL آیتم اول راست‌ترین ستون می‌شود: کارت همکار راست، تعداد توکن چپ (مطابق طراحی) */}
+          <div className="order-1">
             <div className="flex h-full items-center gap-3 rounded-2xl bg-canvas/70 p-3 ring-1 ring-line">
               <Avatar name={employee.fullName} src={employee.avatarUrl} size="lg" />
               <div className="min-w-0">
@@ -113,7 +118,7 @@ export function TransactionModal({
             </div>
           </div>
 
-          <div className="order-2 sm:order-1">
+          <div className="order-2">
             <Field
               label={isSpend ? `تعداد توکن (حداکثر ${formatNumber(employee.balance)})` : "تعداد توکن"}
               htmlFor="tokens"
@@ -121,13 +126,14 @@ export function TransactionModal({
               error={errors.tokens?.message}
             >
               <div className="flex items-stretch gap-2">
+                {/* + اول می‌آید تا در RTL سمت راست قرار بگیرد (− چپ) */}
                 <button
                   type="button"
-                  onClick={() => step(-1)}
-                  aria-label="یک توکن کمتر"
+                  onClick={() => step(1)}
+                  aria-label="یک توکن بیشتر"
                   className="grid w-11 shrink-0 place-items-center rounded-xl bg-canvas text-ink transition hover:bg-primary-soft"
                 >
-                  <MinusIcon className="h-4 w-4" />
+                  <PlusIcon className="h-4 w-4" />
                 </button>
                 <input
                   id="tokens"
@@ -142,17 +148,17 @@ export function TransactionModal({
                 />
                 <button
                   type="button"
-                  onClick={() => step(1)}
-                  aria-label="یک توکن بیشتر"
+                  onClick={() => step(-1)}
+                  aria-label="یک توکن کمتر"
                   className="grid w-11 shrink-0 place-items-center rounded-xl bg-canvas text-ink transition hover:bg-primary-soft"
                 >
-                  <PlusIcon className="h-4 w-4" />
+                  <MinusIcon className="h-4 w-4" />
                 </button>
               </div>
             </Field>
           </div>
 
-          <div className="order-4 sm:order-3">
+          <div className="order-3">
             <Field
               label="توضیحات تراکنش"
               htmlFor="description"
@@ -172,7 +178,7 @@ export function TransactionModal({
             </Field>
           </div>
 
-          <div className="order-3 sm:order-4">
+          <div className="order-4">
             {isSpend ? (
               <Field label="مبلغ (ریال)" htmlFor="amountRial" required error={errors.amountRial?.message}>
                 <input
@@ -210,7 +216,15 @@ export function TransactionModal({
           </p>
         ) : null}
 
-        <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row">
+        <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+          {/* دکمه‌ی اصلی اول می‌آید تا در RTL راست‌ترین باشد؛ در موبایل هم بالای «انصراف» قرار می‌گیرد */}
+          <button
+            type="submit"
+            disabled={pending}
+            className="rounded-xl bg-primary px-6 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-primary-hover disabled:cursor-wait disabled:opacity-70 sm:min-w-44"
+          >
+            {pending ? "در حال ثبت…" : "ثبت تراکنش"}
+          </button>
           <button
             type="button"
             onClick={onClose}
@@ -218,13 +232,6 @@ export function TransactionModal({
             className="rounded-xl bg-canvas px-5 py-3 text-sm font-bold text-muted transition hover:text-ink disabled:opacity-50"
           >
             انصراف
-          </button>
-          <button
-            type="submit"
-            disabled={pending}
-            className="rounded-xl bg-primary px-6 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-primary-hover disabled:cursor-wait disabled:opacity-70 sm:min-w-44"
-          >
-            {pending ? "در حال ثبت…" : "ثبت تراکنش"}
           </button>
         </div>
       </form>

@@ -53,15 +53,7 @@ export function DeleteEmployeeModal({
         </p>
       ) : null}
 
-      <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row">
-        <button
-          type="button"
-          onClick={onClose}
-          disabled={pending}
-          className="rounded-xl bg-canvas px-5 py-3 text-sm font-bold text-muted transition hover:text-ink disabled:opacity-50"
-        >
-          انصراف
-        </button>
+      <div className="mt-6 flex flex-col gap-3 sm:flex-row">
         <button
           type="button"
           onClick={confirm}
@@ -69,6 +61,14 @@ export function DeleteEmployeeModal({
           className="rounded-xl bg-danger px-6 py-3 text-sm font-bold text-white shadow-sm transition hover:brightness-95 disabled:cursor-wait disabled:opacity-70 sm:min-w-44"
         >
           {pending ? "در حال حذف…" : "حذف همکار"}
+        </button>
+        <button
+          type="button"
+          onClick={onClose}
+          disabled={pending}
+          className="rounded-xl bg-canvas px-5 py-3 text-sm font-bold text-muted transition hover:text-ink disabled:opacity-50"
+        >
+          انصراف
         </button>
       </div>
     </Modal>

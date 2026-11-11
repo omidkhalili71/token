@@ -137,7 +137,7 @@ export function EmployeeModal({
               label="موجودی اولیه (اختیاری)"
               htmlFor="initialTokens"
               error={errors.initialTokens?.message}
-              hint={`هر توکن ${formatRial(TOKEN_VALUE_RIAL)}؛ اگر وارد کنید یک تراکنش اهدا با توضیح «موجودی اولیه» ثبت می‌شود.`}
+              hint={`هر توکن ${formatRial(TOKEN_VALUE_RIAL)}؛ اگر وارد کنید یک تراکنش افزایش با توضیح «موجودی اولیه» ثبت می‌شود.`}
             >
               <input
                 id="initialTokens"
@@ -180,7 +180,14 @@ export function EmployeeModal({
           </p>
         ) : null}
 
-        <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row">
+        <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+          <button
+            type="submit"
+            disabled={pending}
+            className="rounded-xl bg-primary px-6 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-primary-hover disabled:cursor-wait disabled:opacity-70 sm:min-w-44"
+          >
+            {pending ? "در حال ثبت…" : isCreate ? "افزودن همکار" : "ذخیره‌ی تغییرات"}
+          </button>
           <button
             type="button"
             onClick={onClose}
@@ -188,13 +195,6 @@ export function EmployeeModal({
             className="rounded-xl bg-canvas px-5 py-3 text-sm font-bold text-muted transition hover:text-ink disabled:opacity-50"
           >
             انصراف
-          </button>
-          <button
-            type="submit"
-            disabled={pending}
-            className="rounded-xl bg-primary px-6 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-primary-hover disabled:cursor-wait disabled:opacity-70 sm:min-w-44"
-          >
-            {pending ? "در حال ثبت…" : isCreate ? "افزودن همکار" : "ذخیره‌ی تغییرات"}
           </button>
         </div>
       </form>

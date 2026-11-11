@@ -73,10 +73,11 @@ export function JalaliRangePicker({
         aria-haspopup="dialog"
         className="flex w-full items-center gap-2 rounded-xl bg-card px-3.5 py-2.5 text-xs font-bold text-ink ring-1 ring-line transition hover:ring-primary sm:w-auto sm:text-[13px]"
       >
-        <CalendarIcon className="h-4 w-4 shrink-0 text-muted" />
         <span className="whitespace-nowrap">
           از تاریخ {formatJalaliDate(range.from)} - {formatJalaliDate(range.to)}
         </span>
+        {/* آیکون بعد از متن می‌آید تا در RTL سمت چپ کادر بنشیند (مطابق طراحی) */}
+        <CalendarIcon className="ms-auto h-4 w-4 shrink-0 text-muted" />
       </button>
 
       {open ? (

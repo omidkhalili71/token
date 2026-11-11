@@ -44,6 +44,14 @@ export function TransactionsSection() {
           تاریخچه تراکنش‌ها
         </h2>
 
+        <JalaliRangePicker
+          range={range}
+          onChange={(next) => {
+            setRange(next);
+            setPage(1);
+          }}
+        />
+
         <label className="sr-only" htmlFor="transaction-type">
           فیلتر نوع تراکنش
         </label>
@@ -62,14 +70,6 @@ export function TransactionsSection() {
             </option>
           ))}
         </select>
-
-        <JalaliRangePicker
-          range={range}
-          onChange={(next) => {
-            setRange(next);
-            setPage(1);
-          }}
-        />
       </div>
 
       <div className="thin-scroll mt-4 overflow-x-auto">
@@ -77,7 +77,7 @@ export function TransactionsSection() {
           <thead>
             <tr className="bg-canvas/70 text-xs text-muted">
               {HEADERS.map((header) => (
-                <th key={header} className="px-3 py-3 text-start font-bold first:rounded-s-xl last:rounded-e-xl">
+                <th key={header} scope="col" className="px-3 py-3 text-start font-bold first:rounded-s-xl last:rounded-e-xl">
                   {header}
                 </th>
               ))}

@@ -12,18 +12,8 @@ export function DashboardHeader() {
         </p>
       </div>
 
-      {/* ترتیب DOM در RTL: آواتار راست‌ترین، سپس زنگ، سپس فلش dropdown */}
+      {/* ترتیب DOM در RTL: زنگ راست‌ترین، بعد آواتار و فلش dropdown چپ‌ترین (مطابق design.png) */}
       <div className="flex shrink-0 items-center gap-3 pt-1">
-        <button
-          type="button"
-          className="rounded-full p-1.5 text-muted transition hover:bg-white/70"
-          aria-haspopup="menu"
-          aria-label="منوی کاربر"
-          disabled
-        >
-          <ChevronDownIcon className="h-5 w-5" />
-        </button>
-
         <button
           type="button"
           className="relative rounded-full p-1.5 text-muted transition hover:bg-white/70"
@@ -34,10 +24,17 @@ export function DashboardHeader() {
           <span className="absolute end-1.5 top-1.5 h-2.5 w-2.5 rounded-full bg-danger ring-2 ring-canvas" />
         </button>
 
-        <span className="flex items-center gap-2 rounded-full bg-card p-1 pe-3 shadow-sm ring-1 ring-line">
-          <Avatar name="مدیر سیستم" size="sm" />
-          <span className="hidden text-xs font-semibold text-muted sm:inline">مدیر سیستم</span>
-        </span>
+        <Avatar name="مدیر سیستم" size="md" />
+
+        <button
+          type="button"
+          className="rounded-full p-1.5 text-muted transition hover:bg-white/70"
+          aria-haspopup="menu"
+          aria-label="منوی کاربر"
+          disabled
+        >
+          <ChevronDownIcon className="h-5 w-5" />
+        </button>
       </div>
     </header>
   );

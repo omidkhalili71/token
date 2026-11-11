@@ -7,7 +7,7 @@ import { formatNumber } from "@/lib/format";
 /** ترتیب DOM در RTL: کارت اول راست‌ترین قرار می‌گیرد، همان مثل طراحی. */
 const CARDS = [
   { key: "activeEmployees", label: "تعداد همکاران فعال", Icon: UsersIcon, tone: "bg-info-soft text-info" },
-  { key: "grantedTokens", label: "توکن‌های اهدا شده", Icon: PlusIcon, tone: "bg-warn-soft text-warn" },
+  { key: "grantedTokens", label: "توکن‌های ثبت شده", Icon: PlusIcon, tone: "bg-warn-soft text-warn" },
   { key: "spentTokens", label: "توکن‌های مصرف شده", Icon: CartIcon, tone: "bg-primary-soft text-primary" },
   { key: "totalTokens", label: "مجموع توکن‌ها", Icon: ChartIcon, tone: "bg-success-soft text-success" },
 ] as const;
@@ -42,7 +42,7 @@ export function StatCards() {
             </p>
             <p className="mt-1 truncate text-xs text-muted sm:text-[13px]">{label}</p>
           </div>
-          <span className={`grid h-11 w-11 shrink-0 place-items-center rounded-full sm:h-12 sm:w-12 ${tone}`}>
+          <span className={`grid h-11 w-11 shrink-0 place-items-center rounded-2xl sm:h-12 sm:w-12 ${tone}`}>
             <Icon className="h-6 w-6" />
           </span>
         </div>

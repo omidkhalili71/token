@@ -60,7 +60,7 @@ export function EmployeesSection({
           <thead>
             <tr className="bg-canvas/70 text-xs text-muted">
               {HEADERS.map((header) => (
-                <th key={header} className="px-3 py-3 text-start font-bold first:rounded-s-xl last:rounded-e-xl">
+                <th key={header} scope="col" className="px-3 py-3 text-start font-bold first:rounded-s-xl last:rounded-e-xl">
                   {header}
                 </th>
               ))}
@@ -164,16 +164,18 @@ function EmployeeRow({ employee, actions }: { employee: EmployeeDto; actions: Em
           <button
             type="button"
             onClick={() => actions.onGrant(employee)}
+            aria-label={`ثبت توکن برای ${employee.fullName}`}
             className="inline-flex items-center gap-1.5 rounded-xl bg-primary-soft px-3 py-2 text-xs font-bold text-primary-ink transition hover:brightness-95"
           >
             <GiftIcon className="h-4 w-4" />
-            اهدای توکن
+            ثبت توکن
           </button>
 
           <button
             type="button"
             onClick={() => actions.onSpend(employee)}
             disabled={!canSpend}
+            aria-label={`خرج توکن برای ${employee.fullName}`}
             title={canSpend ? undefined : "موجودی این همکار صفر است یا غیرفعال است."}
             className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-3 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none disabled:hover:bg-primary"
           >
