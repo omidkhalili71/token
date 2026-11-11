@@ -8,7 +8,11 @@ export const DATA_DIR = path.join(process.cwd(), "data");
 /** تست‌های API با `DATABASE_FILE` به یک فایل موقت وصل می‌شوند. */
 export const DB_FILE = process.env.DATABASE_FILE ?? path.join(DATA_DIR, "app.db");
 
-export type Db = BetterSQLite3Database<typeof schema>;
+/**
+ * `drizzle()` علاوه بر خود کلاس، هندل خام SQLite را زیر `$client` می‌دهد
+ * (برای بستن connection در تست‌ها لازم است)، پس در تایپ اینجا هم اعلام می‌شود.
+ */
+export type Db = BetterSQLite3Database<typeof schema> & { $client: Database.Database };
 
 /** یک connection تازه به فایل SQLite (یا DB در حافظه برای تست). */
 export function openDatabase(file: string | ":memory:" = DB_FILE): Database.Database {

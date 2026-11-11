@@ -174,7 +174,7 @@ describe("قانون ۴ — یکتا بودن کد پرسنلی", () => {
         fullName: zahra.fullName,
         personnelCode: "1002",
         status: "active",
-        avatarUrl: null,
+        avatarUrl: undefined,
       }),
     ).toThrowError(/کد پرسنلی قبلاً/);
     expect(employeeByCode("1006").personnelCode).toBe("1006");
