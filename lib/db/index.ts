@@ -5,7 +5,8 @@ import { drizzle, type BetterSQLite3Database } from "drizzle-orm/better-sqlite3"
 import * as schema from "./schema";
 
 export const DATA_DIR = path.join(process.cwd(), "data");
-export const DB_FILE = path.join(DATA_DIR, "app.db");
+/** تست‌های API با `DATABASE_FILE` به یک فایل موقت وصل می‌شوند. */
+export const DB_FILE = process.env.DATABASE_FILE ?? path.join(DATA_DIR, "app.db");
 
 export type Db = BetterSQLite3Database<typeof schema>;
 
@@ -36,4 +37,12 @@ export function getDb(): Db {
     globalCache.__tokenDashboardDb = createDb();
   }
   return globalCache.__tokenDashboardDb;
+}
+
+/** بستن connection کش‌شده (تست‌ها برای آزاد کردن فایل DB موقت به آن نیاز دارند). */
+export function closeDb(): void {
+  const db = globalCache.__tokenDashboardDb;
+  if (!db) return;
+  db.$client.close();
+  delete globalCache.__tokenDashboardDb;
 }
