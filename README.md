@@ -74,7 +74,7 @@ tests/        تست‌های Vitest (قوانین کسب‌وکار، API، ت�
 ### `components/`
 
 - `dashboard.tsx` — مالح state صفحه: جستجو، فیلترها، صفحه‌بندی و اینکه کدام مودال باز است.
-- `employees-section.tsx` / `transactions-section.tsx` — دو جدول اصلی.
+- `employees-section.tsx` / `transactions-section.tsx` — دو جدول اصلی. در جدول همکاران، «ویرایش» و «حذف» در منوی سه‌نقطه‌ی انتهای هر ردیف هستند و منو با کلیدهای جهت‌دار و Esc کار می‌کند.
 - `stat-cards.tsx` — چهار کارت آماری.
 - `transaction-modal.tsx` — خرج/ثبت توکن (stepper + توضیح الزامی + مبلغ تومانی).
 - `employee-modal.tsx` — افزودن و ویرایش همکار (یک کامپوننت، دو حالت).
@@ -100,7 +100,7 @@ tests/        تست‌های Vitest (قوانین کسب‌وکار، API، ت�
 pnpm test
 ```
 
-۴۸ تست در سه فایل:
+۵۲ تست در سه فایل:
 
 - `tests/business-rules.test.ts` — قوانین موجودی، حذف نرم، جستجو با هر دو نوع رقم، فیلترها.
 - `tests/api.test.ts` — صدا زدن مستقیم route handler ها با `new Request(...)` روی یک DB موقت.

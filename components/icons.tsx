@@ -62,16 +62,11 @@ export const BoltIcon = (p: IconProps) => (
   </Svg>
 );
 
-export const PencilIcon = (p: IconProps) => (
-  <Svg {...p}>
-    <path d="M4 20h4l10-10a2.8 2.8 0 0 0-4-4L4 16v4Z" />
-    <path d="m13.5 6.5 4 4" />
-  </Svg>
-);
-
-export const TrashIcon = (p: IconProps) => (
-  <Svg {...p}>
-    <path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M6 7l1 13h10l1-13M10 11v6M14 11v6" />
+export const MoreIcon = (p: IconProps) => (
+  <Svg {...p} filled>
+    <circle cx="12" cy="5" r="1.9" />
+    <circle cx="12" cy="12" r="1.9" />
+    <circle cx="12" cy="19" r="1.9" />
   </Svg>
 );
 
