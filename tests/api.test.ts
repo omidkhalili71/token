@@ -2,7 +2,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { TOKEN_VALUE_RIAL } from "@/lib/config";
+import { TOKEN_VALUE_TOMAN } from "@/lib/config";
 import type { EmployeeDto, StatsDto } from "@/lib/dto";
 
 let dir: string;
@@ -79,21 +79,21 @@ describe("GET /api/employees", () => {
 });
 
 describe("POST /api/transactions", () => {
-  it("معیار پذیرش: مصرف ۳ توکن مریم احمدی با ۱۵٬۰۰۰ ریال → موجودی ۸ به ۵", async () => {
+  it("معیار پذیرش: مصرف ۳ توکن مریم احمدی با ۱۵٬۰۰۰ تومان → موجودی ۸ به ۵", async () => {
     const maryam = (await employees("1002"))[0];
     const res = await transactionsRoute.POST(
       post("/transactions", {
         employeeId: maryam.id,
         type: "spend",
         tokens: 3,
-        amountRial: 15000,
+        amountToman: 15000,
         description: "خرید بستنی در کافه شرکت",
       }),
     );
     expect(res.status).toBe(201);
-    const created = await jsonOf<{ balanceAfter: number; amountRial: number }>(res);
+    const created = await jsonOf<{ balanceAfter: number; amountToman: number }>(res);
     expect(created.balanceAfter).toBe(5);
-    expect(created.amountRial).toBe(15000);
+    expect(created.amountToman).toBe(15000);
 
     const after = (await employees("1002"))[0];
     expect(after.balance).toBe(5);
@@ -125,9 +125,9 @@ describe("POST /api/transactions", () => {
   it("اهدای توکن مبلغ را خودش حساب می‌کند حتی اگر کاربر عدد دیگری بفرستد", async () => {
     const hamed = (await employees("1005"))[0];
     const res = await transactionsRoute.POST(
-      post("/transactions", { employeeId: hamed.id, type: "grant", tokens: 4, amountRial: 1, description: "پاداش" }),
+      post("/transactions", { employeeId: hamed.id, type: "grant", tokens: 4, amountToman: 1, description: "پاداش" }),
     );
-    expect((await jsonOf<{ amountRial: number }>(res)).amountRial).toBe(4 * TOKEN_VALUE_RIAL);
+    expect((await jsonOf<{ amountToman: number }>(res)).amountToman).toBe(4 * TOKEN_VALUE_TOMAN);
   });
 
   it("توضیحات خالی 422 با پیام فارسی می‌دهد", async () => {

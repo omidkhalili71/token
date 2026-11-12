@@ -10,7 +10,7 @@ export function toLatinDigits(value: string): string {
     .replace(/[٠-٩]/g, (d) => String("٠١٢٣٤٥٦٧٨٩".indexOf(d)));
 }
 
-export function formatRial(amount: number): string {
+export function formatToman(amount: number): string {
   return toPersianDigits(amount.toLocaleString("en-US")).replace(/,/g, "٬");
 }
 

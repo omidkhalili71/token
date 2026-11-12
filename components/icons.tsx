@@ -27,10 +27,18 @@ export const UsersIcon = (p: IconProps) => (
   </Svg>
 );
 
-export const GiftIcon = (p: IconProps) => (
+export const CoinIcon = (p: IconProps) => (
   <Svg {...p}>
-    <path d="M12 5v14M5 9h14M6 9h12v10H6z" />
-    <path d="M12 9S9.5 4 7.5 5.5 9 9 12 9Zm0 0s2.5-5 4.5-3.5S15 9 12 9Z" />
+    <ellipse cx="12" cy="6.5" rx="7.5" ry="3" />
+    <path d="M4.5 6.5v5.5c0 1.66 3.36 3 7.5 3s7.5-1.34 7.5-3V6.5" />
+    <path d="M4.5 12v5.5c0 1.66 3.36 3 7.5 3s7.5-1.34 7.5-3V12" />
+  </Svg>
+);
+
+export const CoinPlusIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <circle cx="10" cy="12" r="7" />
+    <path d="M18.5 16.5v5M16 19h5" />
   </Svg>
 );
 
@@ -45,12 +53,6 @@ export const CartIcon = (p: IconProps) => (
 export const ChartIcon = (p: IconProps) => (
   <Svg {...p}>
     <path d="M4 20h16M7 16V9M12 16V5M17 16v-4" />
-  </Svg>
-);
-
-export const StarIcon = (p: IconProps) => (
-  <Svg {...p} filled>
-    <path d="m12 3.5 2.6 5.3 5.9.85-4.3 4.15 1.02 5.87L12 16.9l-5.24 2.77L7.78 13.8 3.5 9.65l5.9-.85Z" />
   </Svg>
 );
 

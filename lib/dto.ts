@@ -16,7 +16,7 @@ export type TransactionDto = {
   employeeName: string;
   type: TransactionType;
   tokens: number;
-  amountRial: number;
+  amountToman: number;
   description: string;
   createdAt: string;
 };

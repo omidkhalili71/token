@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { TOKEN_VALUE_RIAL } from "./config";
+import { TOKEN_VALUE_TOMAN } from "./config";
 import { toLatinDigits } from "./format";
 
 const personnelCodeField = z
@@ -66,7 +66,7 @@ export const transactionCreateSchema = z
       .int("تعداد توکن باید عدد صحیح باشد.")
       .min(1, "تعداد توکن باید حداقل ۱ باشد.")
       .max(100000, "تعداد توکن حداکثر می‌تواند ۱۰۰٬۰۰۰ باشد."),
-    amountRial: z
+    amountToman: z
       .number("مبلغ باید عدد باشد.")
       .int("مبلغ باید عدد صحیح باشد.")
       .min(1, "مبلغ باید بزرگ‌تر از صفر باشد.")
@@ -91,6 +91,6 @@ export type EmployeeCreateInput = z.infer<typeof employeeCreateSchema>;
 export type EmployeeUpdateInput = z.infer<typeof employeeUpdateSchema>;
 export type TransactionCreateInput = z.infer<typeof transactionCreateSchema>;
 
-export function expectedAmountRial(tokens: number): number {
-  return tokens * TOKEN_VALUE_RIAL;
+export function expectedAmountToman(tokens: number): number {
+  return tokens * TOKEN_VALUE_TOMAN;
 }

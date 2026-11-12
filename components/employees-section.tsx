@@ -1,7 +1,7 @@
 "use client";
 
 import { Avatar } from "@/components/avatar";
-import { BoltIcon, GiftIcon, PencilIcon, PlusIcon, SearchIcon, StarIcon, TrashIcon } from "@/components/icons";
+import { BoltIcon, CoinIcon, CoinPlusIcon, PencilIcon, PlusIcon, SearchIcon, TrashIcon } from "@/components/icons";
 import { Badge, SectionCard, StateMessage } from "@/components/ui";
 import { useEmployees } from "@/lib/client/queries";
 import { formatNumber, toPersianDigits } from "@/lib/format";
@@ -32,7 +32,7 @@ export function EmployeesSection({
   return (
     <SectionCard className="p-4 sm:p-5">
       <div className="flex flex-wrap items-center gap-3">
-        <h2 className="ms-auto text-lg font-extrabold">لیست همکاران</h2>
+        <h2 className="me-auto text-lg font-extrabold">لیست همکاران</h2>
 
         <label className="relative order-last w-full sm:order-none sm:w-auto sm:flex-1 sm:max-w-md">
           <span className="sr-only">جستجوی همکار</span>
@@ -125,7 +125,7 @@ function EmployeeRow({ employee, actions }: { employee: EmployeeDto; actions: Em
       </td>
       <td className="px-3 py-3 text-muted">{toPersianDigits(employee.personnelCode)}</td>
       <td className="px-3 py-3">
-        <Badge variant="primary" icon={<StarIcon className="h-3.5 w-3.5" />}>
+        <Badge variant="primary" icon={<CoinIcon className="h-3.5 w-3.5" />}>
           {formatNumber(employee.balance)}
         </Badge>
       </td>
@@ -164,9 +164,9 @@ function EmployeeRow({ employee, actions }: { employee: EmployeeDto; actions: Em
             type="button"
             onClick={() => actions.onGrant(employee)}
             aria-label={`ثبت توکن برای ${employee.fullName}`}
-            className="inline-flex items-center gap-1.5 rounded-xl bg-primary-soft px-3 py-2 text-xs font-bold text-primary-ink transition hover:brightness-95"
+            className="inline-flex items-center gap-1.5 rounded-xl bg-danger-soft px-3 py-2 text-xs font-bold text-danger transition hover:brightness-95"
           >
-            <GiftIcon className="h-4 w-4" />
+            <CoinPlusIcon className="h-4 w-4" />
             ثبت توکن
           </button>
 

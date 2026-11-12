@@ -4,7 +4,7 @@ import { employees, transactions } from "../db/schema";
 import { balanceSql } from "./balance";
 import { AppError } from "./errors";
 import { toLatinDigits } from "../format";
-import { expectedAmountRial, type EmployeeCreateInput, type EmployeeUpdateInput } from "../validation";
+import { expectedAmountToman, type EmployeeCreateInput, type EmployeeUpdateInput } from "../validation";
 import type { EmployeeDto } from "../dto";
 
 const notDeleted = isNull(employees.deletedAt);
@@ -78,7 +78,7 @@ export function createEmployee(db: Db, input: EmployeeCreateInput): EmployeeDto 
             employeeId: createdId,
             type: "grant",
             tokens: initial,
-            amountRial: expectedAmountRial(initial),
+            amountToman: expectedAmountToman(initial),
             description: "موجودی اولیه",
             createdAt: new Date(),
           })

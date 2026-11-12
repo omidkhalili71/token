@@ -2,7 +2,7 @@ import { addDays, differenceInCalendarDays, startOfMonth } from "date-fns-jalali
 import { sql, isNull } from "drizzle-orm";
 import type { Db } from "./index";
 import { employees, transactions } from "./schema";
-import { expectedAmountRial } from "../validation";
+import { expectedAmountToman } from "../validation";
 
 type SeedEntry = { type: "grant" | "spend"; tokens: number; description: string };
 type SeedEmployee = {
@@ -114,7 +114,7 @@ export function seedDatabase(db: Db, now = new Date()): boolean {
             employeeId: ids[employeeIndex],
             type: entry.type,
             tokens: entry.tokens,
-            amountRial: expectedAmountRial(entry.tokens),
+            amountToman: expectedAmountToman(entry.tokens),
             description: entry.description,
             createdAt: dates[cursor++],
           })

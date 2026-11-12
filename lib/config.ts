@@ -1,3 +1,3 @@
-export const TOKEN_VALUE_RIAL = 100000;
+export const TOKEN_VALUE_TOMAN = 100000;
 
 export const TRANSACTIONS_PAGE_SIZE = 20;

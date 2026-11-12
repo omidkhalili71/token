@@ -8,8 +8,8 @@ import { Field, inputClass } from "@/components/field";
 import { Modal } from "@/components/modal";
 import { useToast } from "@/components/toast";
 import { useEmployeeMutation, type EmployeePayload } from "@/lib/client/queries";
-import { TOKEN_VALUE_RIAL } from "@/lib/config";
-import { formatNumber, formatRial, toLatinDigits } from "@/lib/format";
+import { TOKEN_VALUE_TOMAN } from "@/lib/config";
+import { formatNumber, formatToman, toLatinDigits } from "@/lib/format";
 import { employeeCreateSchema } from "@/lib/validation";
 import type { EmployeeDto, EmployeeStatus } from "@/lib/dto";
 
@@ -124,7 +124,7 @@ export function EmployeeModal({
               label="موجودی اولیه (اختیاری)"
               htmlFor="initialTokens"
               error={errors.initialTokens?.message}
-              hint={`هر توکن ${formatRial(TOKEN_VALUE_RIAL)}؛ اگر وارد کنید یک تراکنش افزایش با توضیح «موجودی اولیه» ثبت می‌شود.`}
+              hint={`هر توکن ${formatToman(TOKEN_VALUE_TOMAN)}؛ اگر وارد کنید یک تراکنش افزایش با توضیح «موجودی اولیه» ثبت می‌شود.`}
             >
               <input
                 id="initialTokens"

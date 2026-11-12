@@ -6,7 +6,7 @@ import { JalaliRangePicker } from "@/components/jalali-range-picker";
 import { Badge, SectionCard, StateMessage } from "@/components/ui";
 import { currentPersianMonth, dayToIso, formatJalaliDateTime } from "@/lib/client/jalali";
 import { useTransactions } from "@/lib/client/queries";
-import { formatNumber, formatRial, toPersianDigits } from "@/lib/format";
+import { formatNumber, formatToman, toPersianDigits } from "@/lib/format";
 import type { TransactionType } from "@/lib/dto";
 
 const TYPE_OPTIONS: { value: TransactionType | ""; label: string }[] = [
@@ -15,7 +15,7 @@ const TYPE_OPTIONS: { value: TransactionType | ""; label: string }[] = [
   { value: "grant", label: "افزایش" },
 ];
 
-const HEADERS = ["تاریخ", "نام فرد", "نوع تراکنش", "مبلغ (ریال)", "توضیحات"];
+const HEADERS = ["تاریخ", "نام فرد", "نوع تراکنش", "مبلغ (تومان)", "توضیحات"];
 
 export function TransactionsSection() {
   const [type, setType] = useState<TransactionType | "">("");
@@ -39,7 +39,7 @@ export function TransactionsSection() {
   return (
     <SectionCard className="p-4 sm:p-5">
       <div className="flex flex-wrap items-center gap-3">
-        <h2 className="ms-auto flex items-center gap-2 text-lg font-extrabold">
+        <h2 className="me-auto flex items-center gap-2 text-lg font-extrabold">
           <HistoryIcon className="h-5 w-5 text-primary" />
           تاریخچه تراکنش‌ها
         </h2>
@@ -131,7 +131,7 @@ export function TransactionsSection() {
                     </Badge>
                   )}
                 </td>
-                <td className="whitespace-nowrap px-3 py-3">{formatRial(transaction.amountRial)}</td>
+                <td className="whitespace-nowrap px-3 py-3">{formatToman(transaction.amountToman)}</td>
                 <td className="px-3 py-3 text-muted">{transaction.description}</td>
               </tr>
             ))}

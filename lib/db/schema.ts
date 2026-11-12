@@ -21,7 +21,7 @@ export const transactions = sqliteTable(
       .references(() => employees.id),
     type: text("type", { enum: ["spend", "grant"] }).notNull(),
     tokens: integer("tokens").notNull(),
-    amountRial: integer("amount_rial").notNull(),
+    amountToman: integer("amount_toman").notNull(),
     description: text("description").notNull(),
     createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
   },

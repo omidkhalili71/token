@@ -9,8 +9,8 @@ import { MinusIcon, PlusIcon } from "@/components/icons";
 import { Modal } from "@/components/modal";
 import { useToast } from "@/components/toast";
 import { useTransactionMutation } from "@/lib/client/queries";
-import { TOKEN_VALUE_RIAL } from "@/lib/config";
-import { formatNumber, formatRial } from "@/lib/format";
+import { TOKEN_VALUE_TOMAN } from "@/lib/config";
+import { formatNumber, formatToman } from "@/lib/format";
 import { transactionCreateSchema, type TransactionCreateInput } from "@/lib/validation";
 import type { EmployeeDto, TransactionType } from "@/lib/dto";
 
@@ -40,8 +40,8 @@ export function TransactionModal({
             message: `موجودی کافی نیست؛ حداکثر ${formatNumber(employee.balance)} توکن.`,
           });
         }
-        if (value.amountRial === undefined) {
-          ctx.addIssue({ code: "custom", path: ["amountRial"], message: "مبلغ را وارد کنید." });
+        if (value.amountToman === undefined) {
+          ctx.addIssue({ code: "custom", path: ["amountToman"], message: "مبلغ را وارد کنید." });
         }
       }),
     [isSpend, employee.balance],
@@ -60,7 +60,7 @@ export function TransactionModal({
       employeeId: employee.id,
       type: mode,
       tokens: 1,
-      amountRial: isSpend ? TOKEN_VALUE_RIAL : undefined,
+      amountToman: isSpend ? TOKEN_VALUE_TOMAN : undefined,
       description: "",
     },
   });
@@ -69,7 +69,7 @@ export function TransactionModal({
 
   useEffect(() => {
     if (!isSpend || amountEdited || !Number.isFinite(tokens)) return;
-    setValue("amountRial", Math.max(1, Math.trunc(tokens)) * TOKEN_VALUE_RIAL);
+    setValue("amountToman", Math.max(1, Math.trunc(tokens)) * TOKEN_VALUE_TOMAN);
   }, [isSpend, amountEdited, tokens, setValue]);
 
   function step(delta: number) {
@@ -78,7 +78,7 @@ export function TransactionModal({
     setValue("tokens", next, { shouldValidate: true, shouldDirty: true });
   }
 
-  const amountField = register("amountRial", { valueAsNumber: true });
+  const amountField = register("amountToman", { valueAsNumber: true });
   const pending = mutation.isPending;
 
   const onSubmit = handleSubmit((values) => {
@@ -175,15 +175,15 @@ export function TransactionModal({
 
           <div className="order-4">
             {isSpend ? (
-              <Field label="مبلغ (ریال)" htmlFor="amountRial" required error={errors.amountRial?.message}>
+              <Field label="مبلغ (تومان)" htmlFor="amountToman" required error={errors.amountToman?.message}>
                 <input
                   {...amountField}
-                  id="amountRial"
+                  id="amountToman"
                   type="number"
                   inputMode="numeric"
                   min={1}
                   step={1}
-                  aria-invalid={Boolean(errors.amountRial)}
+                  aria-invalid={Boolean(errors.amountToman)}
                   className={inputClass}
                   onChange={(event) => {
                     setAmountEdited(true);
@@ -192,12 +192,12 @@ export function TransactionModal({
                 />
               </Field>
             ) : (
-              <Field label="مبلغ (ریال)" htmlFor="amount-preview">
+              <Field label="مبلغ (تومان)" htmlFor="amount-preview">
                 <output
                   id="amount-preview"
                   className="block w-full rounded-xl bg-canvas/70 px-4 py-2.5 text-sm font-bold ring-1 ring-line"
                 >
-                  {formatRial((Number.isFinite(tokens) ? Math.max(1, Math.trunc(tokens)) : 1) * TOKEN_VALUE_RIAL)}
+                  {formatToman((Number.isFinite(tokens) ? Math.max(1, Math.trunc(tokens)) : 1) * TOKEN_VALUE_TOMAN)}
                 </output>
                 <p className="mt-1.5 text-xs text-muted">مبلغ به‌صورت خودکار محاسبه و ثبت می‌شود.</p>
               </Field>

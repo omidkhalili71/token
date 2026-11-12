@@ -58,7 +58,7 @@ export type TransactionPayload = {
   employeeId: number;
   type: TransactionType;
   tokens: number;
-  amountRial?: number;
+  amountToman?: number;
   description: string;
 };
 

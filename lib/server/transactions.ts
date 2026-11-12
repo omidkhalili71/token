@@ -2,7 +2,7 @@ import { and, desc, eq, gte, lte, sql } from "drizzle-orm";
 import type { Db } from "../db";
 import { employees, transactions } from "../db/schema";
 import { TRANSACTIONS_PAGE_SIZE } from "../config";
-import { expectedAmountRial, type TransactionCreateInput } from "../validation";
+import { expectedAmountToman, type TransactionCreateInput } from "../validation";
 import { AppError } from "./errors";
 import { balanceSql } from "./balance";
 import type { TransactionDto } from "../dto";
@@ -13,7 +13,7 @@ const transactionColumns = {
   employeeName: employees.fullName,
   type: transactions.type,
   tokens: transactions.tokens,
-  amountRial: transactions.amountRial,
+  amountToman: transactions.amountToman,
   description: transactions.description,
   createdAt: transactions.createdAt,
 } as const;
@@ -73,7 +73,7 @@ export type CreateTransactionResult = {
   employeeId: number;
   type: "grant" | "spend";
   tokens: number;
-  amountRial: number;
+  amountToman: number;
   description: string;
   createdAt: string;
   balanceAfter: number;
@@ -114,10 +114,10 @@ export function createTransaction(db: Db, input: TransactionCreateInput, now = n
       }
     }
 
-    const amountRial =
-      input.type === "grant" || input.amountRial === undefined
-        ? expectedAmountRial(input.tokens)
-        : input.amountRial;
+    const amountToman =
+      input.type === "grant" || input.amountToman === undefined
+        ? expectedAmountToman(input.tokens)
+        : input.amountToman;
 
     const inserted = tx
       .insert(transactions)
@@ -125,7 +125,7 @@ export function createTransaction(db: Db, input: TransactionCreateInput, now = n
         employeeId: employee.id,
         type: input.type,
         tokens: input.tokens,
-        amountRial,
+        amountToman,
         description: input.description,
         createdAt: now,
       })
@@ -137,7 +137,7 @@ export function createTransaction(db: Db, input: TransactionCreateInput, now = n
       employeeId: employee.id,
       type: input.type,
       tokens: input.tokens,
-      amountRial,
+      amountToman,
       description: input.description,
       createdAt: now.toISOString(),
       balanceAfter: readBalance(employee.id),
