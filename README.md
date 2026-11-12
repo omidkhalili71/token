@@ -47,6 +47,7 @@ tests/        تست‌های Vitest (قوانین کسب‌وکار، API، ت�
 - `api/employees/[id]/route.ts` — `PATCH` ویرایش، `DELETE` حذف نرم.
 - `api/transactions/route.ts` — `POST` ثبت تراکنش (خرج/افزایش)، `GET` تاریخچه با فیلتر نوع، بازه‌ی تاریخ و صفحه.
 - `api/stats/route.ts` — جمع کارت‌های بالای صفحه.
+- `globals.css` — توکن‌های رنگ و فونت، و قاعده‌ی `button:not(:disabled) { cursor: pointer }`؛ preflight تیلویند v4 نشانگر دکمه‌ها را `default` گذاشته و این خط همان را برای کل برنامه برمی‌گرداند.
 
 هر route فقط ورودی/خروجی را تبدیل می‌کند؛ تصمیم‌های کسب‌وکار در `lib/server` است تا
 بتوان همان تابع‌ها را مستقیم تست کرد. همه با `export const dynamic = "force-dynamic"`

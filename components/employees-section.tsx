@@ -199,14 +199,17 @@ function RowActionsMenu({ employee, actions }: { employee: EmployeeDto; actions:
     const rect = trigger.getBoundingClientRect();
     const panelHeight = panel.offsetHeight;
     const panelWidth = panel.offsetWidth;
+    const contentWidth = document.documentElement.clientWidth;
+    const fixedOriginX =
+      getComputedStyle(document.documentElement).direction === "rtl" ? window.innerWidth - contentWidth : 0;
     const spaceBelow = window.innerHeight - rect.bottom - MENU_GAP;
     const top =
       spaceBelow >= panelHeight || spaceBelow >= rect.top - MENU_GAP
         ? rect.bottom + MENU_GAP
         : rect.top - panelHeight - MENU_GAP;
     const left = Math.min(
-      Math.max(rect.left, EDGE_MARGIN),
-      Math.max(EDGE_MARGIN, window.innerWidth - panelWidth - EDGE_MARGIN),
+      Math.max(rect.left - fixedOriginX, EDGE_MARGIN),
+      Math.max(EDGE_MARGIN, contentWidth - panelWidth - EDGE_MARGIN),
     );
     setPosition({ top, left });
   }, [open]);
@@ -268,7 +271,7 @@ function RowActionsMenu({ employee, actions }: { employee: EmployeeDto; actions:
         aria-haspopup="menu"
         aria-expanded={open}
         aria-controls={open ? menuId : undefined}
-        className={`grid h-9 w-9 place-items-center rounded-xl transition ${
+        className={`ms-auto grid h-9 w-9 place-items-center rounded-xl transition ${
           open ? "bg-line/60 text-ink" : "bg-canvas text-muted hover:bg-line/60 hover:text-ink"
         }`}
       >

@@ -38,6 +38,10 @@
     font-feature-settings: "ss01";
   }
 
+  button:not(:disabled) {
+    cursor: pointer;
+  }
+
   table {
     font-variant-numeric: tabular-nums;
   }
