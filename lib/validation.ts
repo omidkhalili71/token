@@ -1,6 +1,31 @@
 import { z } from "zod";
-import { TOKEN_VALUE_TOMAN } from "./config";
+import { MIN_PASSWORD_LENGTH, TOKEN_VALUE_TOMAN } from "./config";
 import { toLatinDigits } from "./format";
+
+export function normalizeMobile(value: string): string | null {
+  let digits = toLatinDigits(value).replace(/\D/g, "");
+  if (digits.startsWith("0098")) digits = digits.slice(4);
+  else if (digits.length === 12 && digits.startsWith("98")) digits = digits.slice(2);
+  else if (digits.startsWith("0")) digits = digits.slice(1);
+  return /^9\d{9}$/.test(digits) ? `0${digits}` : null;
+}
+
+export function normalizeLoginIdentifier(value: string): string {
+  const trimmed = value.trim().toLowerCase();
+  return normalizeMobile(trimmed) ?? trimmed;
+}
+
+const mobileField = z
+  .string({ error: "شماره موبایل الزامی است." })
+  .trim()
+  .transform((value) => normalizeMobile(value))
+  .refine((value): value is string => value !== null, "شماره موبایل باید ۱۱ رقم و با ۰۹ شروع شود.");
+
+const passwordField = (message: string) =>
+  z
+    .string({ error: message })
+    .min(1, message)
+    .refine((value) => value.trim().length > 0, "رمز عبور نمی‌تواند فقط فاصله باشد.");
 
 const personnelCodeField = z
   .string({ error: "کد پرسنلی الزامی است." })
@@ -37,6 +62,7 @@ export const employeeCreateSchema = z
   .object({
     fullName: fullNameField,
     personnelCode: personnelCodeField,
+    mobile: mobileField.optional(),
     status: statusField,
     avatarUrl: avatarUrlField,
     initialTokens: z
@@ -52,9 +78,40 @@ export const employeeUpdateSchema = z
   .object({
     fullName: fullNameField,
     personnelCode: personnelCodeField,
+    mobile: mobileField.optional(),
     status: statusField,
     avatarUrl: avatarUrlField,
   })
+  .strict();
+
+export const loginSchema = z
+  .object({
+    identifier: z
+      .string({ error: "شماره موبایل الزامی است." })
+      .trim()
+      .min(1, "شماره موبایل الزامی است.")
+      .transform(normalizeLoginIdentifier),
+    password: passwordField("رمز عبور الزامی است."),
+  })
+  .strict();
+
+export const changePasswordSchema = z
+  .object({
+    currentPassword: passwordField("رمز عبور فعلی الزامی است."),
+    newPassword: passwordField("رمز عبور جدید الزامی است.").min(
+      MIN_PASSWORD_LENGTH,
+      "رمز عبور جدید باید بیشتر از ۶ کاراکتر باشد.",
+    ),
+    confirmPassword: passwordField("تکرار رمز عبور جدید الزامی است."),
+  })
+  .strict()
+  .refine((value) => value.newPassword === value.confirmPassword, {
+    message: "تکرار رمز عبور جدید با رمز جدید مطابقت ندارد.",
+    path: ["confirmPassword"],
+  });
+
+export const refreshSchema = z
+  .object({ refreshToken: z.string({ error: "توکن تازه‌سازی الزامی است." }).trim().min(1) })
   .strict();
 
 export const transactionCreateSchema = z
@@ -90,6 +147,8 @@ export const transactionsQuerySchema = z.object({
 export type EmployeeCreateInput = z.infer<typeof employeeCreateSchema>;
 export type EmployeeUpdateInput = z.infer<typeof employeeUpdateSchema>;
 export type TransactionCreateInput = z.infer<typeof transactionCreateSchema>;
+export type LoginInput = z.infer<typeof loginSchema>;
+export type ChangePasswordInput = z.infer<typeof changePasswordSchema>;
 
 export function expectedAmountToman(tokens: number): number {
   return tokens * TOKEN_VALUE_TOMAN;

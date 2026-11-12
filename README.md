@@ -11,8 +11,11 @@ pnpm install
 pnpm dev
 ```
 
-بعد از باز کردن http://localhost:3000 هیچ تنظیم دستی لازم نیست: اگر `data/app.db` وجود
-نداشته باشد، `pnpm dev` (و `pnpm build`) خودش migration را اجرا و داده‌ی نمونه را seed می‌کند.
+بعد از باز کردن http://localhost:3000 هیچ تنظیم دستی لازم نیست: برنامه خودش migration را اجرا
+می‌کند و اگر دیتابیسی نباشد داده‌ی نمونه را seed می‌کند. صفحه‌ی `/login` کاربر را می‌خواهد و
+حساب پیش‌فرض مدیر با نام کاربری `admin` و رمز `123456` هنگام seed ساخته می‌شود.
+
+> رمز پیش‌فرض فقط برای محیط توسعه است؛ در محیط واقعی آن را عوض کنید.
 
 اسکریپت‌های دستی:
 
@@ -36,13 +39,19 @@ lib/          منطق مشترک: اعتبارسنجی، DB، سرویس سرو
 drizzle/      فایل migration و snapshot متادیتای آن
 data/app.db   دیتابیس SQLite (ساخته‌ی محلی، در repo نیست)
 scripts/      ensure-db / migrate / seed / reset
-tests/        تست‌های Vitest (قوانین کسب‌وکار، API، تقویم شمسی)
+tests/        تست‌های Vitest (قوانین کسب‌وکار، API، احراز هویت، تقویم شمسی)
 ```
 
 ### `app/`
 
 - `layout.tsx` — `dir="rtl"`، `lang="fa"`، فونت وزیرمتن و `Providers`.
-- `page.tsx` — یک صفحه: `Dashboard`. سرور رندر می‌کند، داده را کلاینت می‌گیرد.
+- `page.tsx` — داشبورد، داخل `SessionGate`؛ بدون نشست معتبر به `/login` می‌رود.
+- `login/page.tsx` — صفحه‌ی ورود (موبایل و رمز عبور).
+- `api/auth/login/route.ts` — `POST` ورود؛ جفت Access/Refresh Token می‌دهد.
+- `api/auth/refresh/route.ts` — `POST` تازه‌سازی؛ نشست قبلی را باطل و جفت جدید می‌سازد.
+- `api/auth/logout/route.ts` — `POST` خروج؛ نشست را باطل می‌کند (بدون توکن هم ۲۰۰ می‌دهد).
+- `api/auth/me/route.ts` — `GET` کاربر جاری.
+- `api/auth/password/route.ts` — `PATCH` تغییر رمز؛ رمز فعلی را سمت سرور می‌سنجد.
 - `api/employees/route.ts` — `GET` لیست با `?search=`، `POST` افزودن همکار.
 - `api/employees/[id]/route.ts` — `PATCH` ویرایش، `DELETE` حذف نرم.
 - `api/transactions/route.ts` — `POST` ثبت تراکنش (خرج/افزایش)، `GET` تاریخچه با فیلتر نوع، بازه‌ی تاریخ و صفحه.
@@ -50,32 +59,44 @@ tests/        تست‌های Vitest (قوانین کسب‌وکار، API، ت�
 - `globals.css` — توکن‌های رنگ و فونت، و قاعده‌ی `button:not(:disabled) { cursor: pointer }`؛ preflight تیلویند v4 نشانگر دکمه‌ها را `default` گذاشته و این خط همان را برای کل برنامه برمی‌گرداند.
 
 هر route فقط ورودی/خروجی را تبدیل می‌کند؛ تصمیم‌های کسب‌وکار در `lib/server` است تا
-بتوان همان تابع‌ها را مستقیم تست کرد. همه با `export const dynamic = "force-dynamic"`
+بتوان همان تابع‌ها را مستقیم تست کرد. مسیرهای غیر از `api/auth/login` و `api/auth/refresh`
+با `requireSession` محافظت می‌شوند. همه با `export const dynamic = "force-dynamic"`
 روی SQLite نوشته می‌شوند (کش نشوند).
 
 ### `lib/`
 
-- `validation.ts` — اسکیماهای Zod، مشترک بین فرم کلاینت و `parse` سرور (قانون: یک تعریف، دو مصرف).
-- `db/schema.ts` — جداول `employees` و `transactions` (Drizzle).
+- `validation.ts` — اسکیماهای Zod، مشترک بین فرم کلاینت و `parse` سرور (قانون: یک تعریف، دو مصرف). نرمال‌سازی موبایل به فرم `09xxxxxxxxx` اینجا است.
+- `db/schema.ts` — جداول `employees`، `transactions`، `users` و `sessions` (Drizzle).
 - `db/index.ts` — connection تکی با WAL و `foreign_keys ON`.
 - `db/bootstrap.ts` — اجرای migration و seed در هنگام استارت.
-- `db/seed.ts` — داده‌ی نمونه: ۵ همکار + تراکنش‌های این ماه.
-- `server/employees.ts`، `server/transactions.ts`، `server/stats.ts` — کوئری‌ها و قوانین.
+- `db/seed.ts` — داده‌ی نمونه: ۵ همکار + تراکنش‌های این ماه، و حساب مدیر پیش‌فرض (`ensureDefaultAdmin`، idempotent).
+- `server/employees.ts`، `server/transactions.ts`، `server/stats.ts` — کوئری‌ها و قوانین. `employees` حساب کاربری همکار (`users.mobile`) را هم می‌خواند و هم می‌سازد.
+- `server/auth.ts` — `authenticate`/`refreshSession`/`logout`/`changePassword` و `requireSession`.
+- `server/sessions.ts` — توکن‌های تصادفی ۲۵۶ بیتی؛ فقط هش SHA-۲۵6 آن‌ها در DB می‌ماند.
+- `server/passwords.ts` — هش `scrypt` با پارامترهای ذخیره‌شده در رشته، و مقایسه‌ی زمان‌ثابت (برای کاربر ناشناس هم padding می‌شود تا زمان ورود oneof نشود).
 - `server/balance.ts` — هسته‌ی قانون موجودی: خوانش و نوشتن داخل یک `db.transaction`.
-- `server/errors.ts` — `AppError` و کدهای دامنه (`not_found`، `insufficient_balance`، …).
+- `server/errors.ts` — `AppError` و کدهای دامنه (`unauthorized`، `insufficient_balance`، …).
 - `server/http.ts` — `readJson`/`parseQuery`/`parseId` و نگاشت `AppError` به `status` با پیام فارسی (`toErrorResponse`).
 - `client/queries.ts` — هوک‌های TanStack Query (است، لیست، تاریخچه) و mutation ها.
-- `client/api.ts` — `fetch` کوچک با تبدیل بدنه‌ی خطا به `ClientApiError`.
+- `client/api.ts` — `fetch` کوچک با `Authorization: Bearer`، یک تلاش مجدد بعد از `401` و تازه‌سازی single-flight.
+- `client/tokens.ts` — نگه‌داری نشست در `localStorage` و انتشار تغییر وضعیت برای `useSyncExternalStore`.
+- `client/session.ts` — اکشن‌های `signIn`/`signOut`/`fetchCurrentUser`/`changeCurrentPassword`.
+- `client/use-auth.ts` — هوک وضعیت نشست.
 - `client/jalali.ts` — لایه‌ی شمسی: تبدیل UTC↔شمسی و شبکه‌ی ماه تقویم.
 - `client/use-debounced-value.ts` — تأخیر ۳۰۰ms روی جستجو.
 - `format.ts` — ارقام فارسی، جداکننده‌ی هزارگان، مبلغ تومان، تاریخ و ساعت شمسی.
-- `config.ts` — نرخ توکن (`TOKEN_VALUE_TOMAN = 100000`) و اندازه‌ی صفحه‌ی تاریخچه.
-- `dto.ts` — شکل داده‌ی exchanged بین API و UI.
+- `config.ts` — نرخ توکن (`TOKEN_VALUE_TOMAN = 100000`)، اندازه‌ی صفحه‌ی تاریخچه، TTL دو توکن (۷۲ ساعت)، حساب و رمز پیش‌فرض، حداقل طول رمز (`MIN_PASSWORD_LENGTH = 7`).
+- `dto.ts` — شکل داده‌ی exchanged بین API و UI (`EmployeeDto`، `UserDto`، `SessionDto`، …).
 
 ### `components/`
 
 - `dashboard.tsx` — مالح state صفحه: جستجو، فیلترها، صفحه‌بندی و اینکه کدام مودال باز است.
-- `employees-section.tsx` / `transactions-section.tsx` — دو جدول اصلی. در جدول همکاران، «ویرایش» و «حذف» در منوی سه‌نقطه‌ی انتهای هر ردیف هستند و منو با کلیدهای جهت‌دار و Esc کار می‌کند.
+- `dashboard-header.tsx` — عنوان و منوی کاربر بالای صفحه (تغییر رمز عبور، خروج) با نام کاربر جاری.
+- `session-gate.tsx` — تا نشست با `/api/auth/me` تأیید نشود داشبورد را نشان نمی‌دهد؛ بدون نشست به `/login` می‌رود.
+- `login-form.tsx` — فرم ورود (موبایل و رمز) با پیام خطای سرور.
+- `change-password-modal.tsx` — رمز فعلی، رمز جدید و تکرار آن؛ اعتبارسنجی در فرم و مجدد سمت سرور.
+- `action-menu.tsx` — منوی کشویی مشترک (موقعیت `fixed` با اصلاح اختلاف مبدأ در RTL، Esc و کلیدهای جهت‌دار، بستن با کلیک بیرون یا اسکرول).
+- `employees-section.tsx` / `transactions-section.tsx` — دو جدول اصلی. در جدول همکاران، «ویرایش» و «حذف» در منوی سه‌نقطه‌ی انتهای هر ردیف هستند.
 - `stat-cards.tsx` — چهار کارت آماری.
 - `transaction-modal.tsx` — خرج/ثبت توکن (stepper + توضیح الزامی + مبلغ تومانی).
 - `employee-modal.tsx` — افزودن و ویرایش همکار (یک کامپوننت، دو حالت).
@@ -86,6 +107,9 @@ tests/        تست‌های Vitest (قوانین کسب‌وکار، API، ت�
 
 ## قوانینی که در سرور enforce می‌شوند
 
+- هر مسیر غیر از `login` و `refresh` بدون Access Token معتبر `401` با کد `unauthorized` می‌دهد؛ محدود کردن فقط در UI کافی نیست.
+- تغییر رمز عبور، رمز فعلی را سمت سرور می‌سنجد (`invalid_credentials` با `403`) و بقیه‌ی نشست‌های همان کاربر را باطل می‌کند.
+- با حذف همکار، حساب کاربری و نشست‌های او هم پاک می‌شوند؛ تراکنش‌هایش می‌ماند.
 - موجودی نمی‌تواند منفی شود؛ درخواست مستقیم API هم رد می‌شود (`insufficient_balance`).
 - تراکنش بدون توضیح رد می‌شود.
 - مبلغ تومانیِ تراکنشِ افزایش را سرور محاسبه می‌کند (`توکن × ۱۰۰٬۰۰۰`)؛ کلاینت آن را ارسال نمی‌کند.
@@ -101,10 +125,11 @@ tests/        تست‌های Vitest (قوانین کسب‌وکار، API، ت�
 pnpm test
 ```
 
-۵۲ تست در سه فایل:
+۶۷ تست در چهار فایل:
 
 - `tests/business-rules.test.ts` — قوانین موجودی، حذف نرم، جستجو با هر دو نوع رقم، فیلترها.
-- `tests/api.test.ts` — صدا زدن مستقیم route handler ها با `new Request(...)` روی یک DB موقت.
+- `tests/api.test.ts` — صدا زدن مستقیم route handler ها با `new Request(...)` و هدر `Authorization` روی یک DB موقت.
+- `tests/auth.test.ts` — ورود، `401` بدون توکن، تازه‌سازی و باطل شدن جفت قبلی، خروج، تغییر رمز و اثر آن روی نشست‌های دیگر، حساب خودکار همکار.
 - `tests/jalali.test.ts` — شبکه‌ی ماه شمسی، مرزهای بازه و تبدیل‌ها.
 
 ## تصمیم‌های فنی

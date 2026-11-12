@@ -1,8 +1,10 @@
 import { addDays, differenceInCalendarDays, startOfMonth } from "date-fns-jalali";
-import { sql, isNull } from "drizzle-orm";
+import { eq, isNull, sql } from "drizzle-orm";
+import { DEFAULT_ADMIN_FULL_NAME, DEFAULT_ADMIN_MOBILE, DEFAULT_PASSWORD } from "../config";
 import type { Db } from "./index";
-import { employees, transactions } from "./schema";
+import { employees, transactions, users } from "./schema";
 import { expectedAmountToman } from "../validation";
+import { hashPassword } from "../server/passwords";
 
 type SeedEntry = { type: "grant" | "spend"; tokens: number; description: string };
 type SeedEmployee = {
@@ -85,7 +87,28 @@ function isNullDeleted() {
   return sql`${employees.deletedAt} is null`;
 }
 
+export function ensureDefaultAdmin(db: Db, now = new Date()): void {
+  const existing = db.select({ id: users.id }).from(users).where(eq(users.mobile, DEFAULT_ADMIN_MOBILE)).get();
+  if (existing) return;
+
+  try {
+    db.insert(users)
+      .values({
+        fullName: DEFAULT_ADMIN_FULL_NAME,
+        mobile: DEFAULT_ADMIN_MOBILE,
+        passwordHash: hashPassword(DEFAULT_PASSWORD),
+        employeeId: null,
+        createdAt: now,
+      })
+      .run();
+  } catch (error) {
+    const code = String((error as { code?: string })?.code ?? "");
+    if (!code.includes("SQLITE_CONSTRAINT_UNIQUE")) throw error;
+  }
+}
+
 export function seedDatabase(db: Db, now = new Date()): boolean {
+  ensureDefaultAdmin(db, now);
   if (countAliveEmployees(db) > 0) return false;
 
   const dates = spreadDatesWithinPersianMonth(SEED_EMPLOYEES.reduce((n, e) => n + e.entries.length, 0), now);

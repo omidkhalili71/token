@@ -5,6 +5,7 @@ export type EmployeeDto = {
   id: number;
   fullName: string;
   personnelCode: string;
+  mobile: string | null;
   avatarUrl: string | null;
   status: EmployeeStatus;
   balance: number;
@@ -29,3 +30,16 @@ export type StatsDto = {
 };
 
 export type ApiError = { error: { code: string; message: string } };
+
+export type UserDto = {
+  id: number;
+  fullName: string;
+  mobile: string;
+};
+
+export type SessionDto = {
+  accessToken: string;
+  refreshToken: string;
+  accessExpiresAt: string;
+  user: UserDto;
+};

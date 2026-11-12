@@ -2,10 +2,11 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { TOKEN_VALUE_TOMAN } from "@/lib/config";
+import { DEFAULT_PASSWORD, TOKEN_VALUE_TOMAN } from "@/lib/config";
 import type { EmployeeDto, StatsDto } from "@/lib/dto";
 
 let dir: string;
+let accessToken = "";
 let statsRoute: typeof import("@/app/api/stats/route");
 let employeesRoute: typeof import("@/app/api/employees/route");
 let employeeRoute: typeof import("@/app/api/employees/[id]/route");
@@ -13,17 +14,24 @@ let transactionsRoute: typeof import("@/app/api/transactions/route");
 
 const url = (search = "") => `http://localhost/api${search}`;
 
+function authorized(pathname: string, init: RequestInit = {}) {
+  return new Request(url(pathname), {
+    ...init,
+    headers: { ...init.headers, authorization: `Bearer ${accessToken}` },
+  });
+}
+
 async function jsonOf<T>(res: Response): Promise<T> {
   return (await res.json()) as T;
 }
 
 async function employees(q = ""): Promise<EmployeeDto[]> {
-  const res = await employeesRoute.GET(new Request(url(`/employees?q=${encodeURIComponent(q)}`)));
+  const res = await employeesRoute.GET(authorized(`/employees?q=${encodeURIComponent(q)}`));
   return (await jsonOf<{ items: EmployeeDto[] }>(res)).items;
 }
 
 function post(pathname: string, body: unknown) {
-  return new Request(url(pathname), { method: "POST", body: JSON.stringify(body) });
+  return authorized(pathname, { method: "POST", body: JSON.stringify(body) });
 }
 
 beforeAll(async () => {
@@ -37,6 +45,15 @@ beforeAll(async () => {
   employeesRoute = await import("@/app/api/employees/route");
   employeeRoute = await import("@/app/api/employees/[id]/route");
   transactionsRoute = await import("@/app/api/transactions/route");
+
+  const loginRoute = await import("@/app/api/auth/login/route");
+  const login = await loginRoute.POST(
+    new Request(url("/auth/login"), {
+      method: "POST",
+      body: JSON.stringify({ identifier: "admin", password: DEFAULT_PASSWORD }),
+    }),
+  );
+  accessToken = (await jsonOf<{ accessToken: string }>(login)).accessToken;
 });
 
 afterAll(async () => {
@@ -47,7 +64,7 @@ afterAll(async () => {
 
 describe("GET /api/stats", () => {
   it("چهار عدد کارت را با فرمول spec می‌دهد", async () => {
-    const stats = await jsonOf<StatsDto>(await statsRoute.GET());
+    const stats = await jsonOf<StatsDto>(await statsRoute.GET(authorized("/stats")));
     expect(stats.activeEmployees).toBe(4);
     expect(stats.grantedTokens).toBe(129);
     expect(stats.spentTokens).toBe(53);
@@ -98,7 +115,7 @@ describe("POST /api/transactions", () => {
     const after = (await employees("1002"))[0];
     expect(after.balance).toBe(5);
 
-    const stats = await jsonOf<StatsDto>(await statsRoute.GET());
+    const stats = await jsonOf<StatsDto>(await statsRoute.GET(authorized("/stats")));
     expect(stats.spentTokens).toBe(56);
   });
 
@@ -152,31 +169,31 @@ describe("POST /api/transactions", () => {
 describe("GET /api/transactions", () => {
   it("فیلتر نوع، بازه‌ی تاریخ و صفحه‌بندی", async () => {
     const all = await jsonOf<{ items: unknown[]; total: number; pageSize: number }>(
-      await transactionsRoute.GET(new Request(url("/transactions"))),
+      await transactionsRoute.GET(authorized("/transactions")),
     );
     expect(all.pageSize).toBe(20);
     expect(all.total).toBeGreaterThanOrEqual(all.items.length);
 
     const spends = await jsonOf<{ items: { type: string }[] }>(
-      await transactionsRoute.GET(new Request(url("/transactions?type=spend"))),
+      await transactionsRoute.GET(authorized("/transactions?type=spend")),
     );
     expect(spends.items.every((t) => t.type === "spend")).toBe(true);
 
     const future = await transactionsRoute.GET(
-      new Request(url(`/transactions?from=${encodeURIComponent(new Date(Date.now() + 86400000).toISOString())}`)),
+      authorized(`/transactions?from=${encodeURIComponent(new Date(Date.now() + 86400000).toISOString())}`),
     );
     expect((await jsonOf<{ items: unknown[] }>(future)).items).toEqual([]);
   });
 
   it("جدیدترین تراکنش اول می‌آید", async () => {
-    const res = await transactionsRoute.GET(new Request(url("/transactions")));
+    const res = await transactionsRoute.GET(authorized("/transactions"));
     const { items } = await jsonOf<{ items: { createdAt: string }[] }>(res);
     const times = items.map((i) => Date.parse(i.createdAt));
     expect([...times].sort((a, b) => b - a)).toEqual(times);
   });
 
   it("page خارج از محدوده لیست خالی می‌دهد", async () => {
-    const res = await transactionsRoute.GET(new Request(url("/transactions?page=999")));
+    const res = await transactionsRoute.GET(authorized("/transactions?page=999"));
     expect((await jsonOf<{ items: unknown[] }>(res)).items).toEqual([]);
   });
 });
@@ -210,7 +227,7 @@ describe("POST/PATCH/DELETE /api/employees", () => {
   it("ویرایش نام و وضعیت اعمال می‌شود", async () => {
     const saras = (await employees("1006"))[0];
     const res = await employeeRoute.PATCH(
-      new Request(url("/employees/1"), {
+      authorized("/employees/1", {
         method: "PATCH",
         body: JSON.stringify({ fullName: "سارا حسینی‌زاده", personnelCode: "1006", status: "inactive" }),
       }),
@@ -223,21 +240,21 @@ describe("POST/PATCH/DELETE /api/employees", () => {
   it("حذف، soft delete است و تاریخچه را نگه می‌دارد", async () => {
     const saras = (await employees("1006"))[0];
     const before = await jsonOf<{ total: number }>(
-      await transactionsRoute.GET(new Request(url("/transactions"))),
+      await transactionsRoute.GET(authorized("/transactions")),
     );
 
-    const res = await employeeRoute.DELETE(new Request(url("/employees/1"), { method: "DELETE" }), {
+    const res = await employeeRoute.DELETE(authorized("/employees/1", { method: "DELETE" }), {
       params: Promise.resolve({ id: String(saras.id) }),
     });
     expect(res.status).toBe(200);
 
     expect((await employees()).some((e) => e.id === saras.id)).toBe(false);
-    const after = await jsonOf<{ total: number }>(await transactionsRoute.GET(new Request(url("/transactions"))));
+    const after = await jsonOf<{ total: number }>(await transactionsRoute.GET(authorized("/transactions")));
     expect(after.total).toBe(saras.balance > 0 ? before.total + 1 : before.total);
   });
 
   it("ویرایش همکار حذف‌شده 404 می‌دهد", async () => {
-    const res = await employeeRoute.DELETE(new Request(url("/employees/1"), { method: "DELETE" }), {
+    const res = await employeeRoute.DELETE(authorized("/employees/1", { method: "DELETE" }), {
       params: Promise.resolve({ id: "99999" }),
     });
     expect(res.status).toBe(404);

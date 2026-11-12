@@ -13,8 +13,11 @@ export class AppError extends Error {
 
 export type ErrorCode =
   | "invalid_input"
+  | "unauthorized"
+  | "invalid_credentials"
   | "employee_not_found"
   | "duplicate_personnel_code"
+  | "duplicate_mobile"
   | "insufficient_balance"
   | "employee_inactive"
   | "employee_deleted"

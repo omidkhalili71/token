@@ -1,11 +1,12 @@
 import { and, asc, eq, isNull, like, or } from "drizzle-orm";
 import type { Db } from "../db";
-import { employees, transactions } from "../db/schema";
+import { employees, sessions, transactions, users } from "../db/schema";
 import { balanceSql } from "./balance";
 import { AppError } from "./errors";
 import { toLatinDigits } from "../format";
 import { expectedAmountToman, type EmployeeCreateInput, type EmployeeUpdateInput } from "../validation";
 import type { EmployeeDto } from "../dto";
+import { createUserAccount } from "./auth";
 
 const notDeleted = isNull(employees.deletedAt);
 
@@ -13,10 +14,13 @@ const employeeColumns = {
   id: employees.id,
   fullName: employees.fullName,
   personnelCode: employees.personnelCode,
+  mobile: users.mobile,
   avatarUrl: employees.avatarUrl,
   status: employees.status,
   balance: balanceSql,
 } as const;
+
+type AccountWriter = Pick<Db, "insert" | "update" | "select">;
 
 export function listEmployees(db: Db, query = ""): EmployeeDto[] {
   const q = toLatinDigits(query).trim();
@@ -28,6 +32,7 @@ export function listEmployees(db: Db, query = ""): EmployeeDto[] {
     .select(employeeColumns)
     .from(employees)
     .leftJoin(transactions, eq(transactions.employeeId, employees.id))
+    .leftJoin(users, eq(users.employeeId, employees.id))
     .where(search ? and(notDeleted, search) : notDeleted)
     .groupBy(employees.id)
     .orderBy(asc(employees.personnelCode))
@@ -39,6 +44,7 @@ export function getEmployee(db: Db, id: number): EmployeeDto {
     .select(employeeColumns)
     .from(employees)
     .leftJoin(transactions, eq(transactions.employeeId, employees.id))
+    .leftJoin(users, eq(users.employeeId, employees.id))
     .where(and(eq(employees.id, id), notDeleted))
     .groupBy(employees.id)
     .get();
@@ -47,11 +53,29 @@ export function getEmployee(db: Db, id: number): EmployeeDto {
 }
 
 function rethrowUnique(error: unknown): never {
-  const code = (error as { code?: string })?.code ?? "";
-  if (String(code).includes("SQLITE_CONSTRAINT_UNIQUE")) {
+  const code = String((error as { code?: string })?.code ?? "");
+  const message = String((error as { message?: string })?.message ?? "");
+  if (code.includes("SQLITE_CONSTRAINT_UNIQUE") && message.includes("users.mobile")) {
+    throw new AppError("duplicate_mobile", "این شماره موبایل قبلاً ثبت شده است.", 409);
+  }
+  if (code.includes("SQLITE_CONSTRAINT_UNIQUE")) {
     throw new AppError("duplicate_personnel_code", "این کد پرسنلی قبلاً ثبت شده است.", 409);
   }
   throw error;
+}
+
+function syncEmployeeAccount(db: AccountWriter, employeeId: number, fullName: string, mobile: string | undefined): void {
+  const account = db.select({ id: users.id }).from(users).where(eq(users.employeeId, employeeId)).get();
+
+  if (account) {
+    db.update(users)
+      .set(mobile ? { fullName, mobile } : { fullName })
+      .where(eq(users.id, account.id))
+      .run();
+    return;
+  }
+
+  if (mobile) createUserAccount(db, { fullName, mobile, employeeId });
 }
 
 export function createEmployee(db: Db, input: EmployeeCreateInput): EmployeeDto {
@@ -70,6 +94,8 @@ export function createEmployee(db: Db, input: EmployeeCreateInput): EmployeeDto 
         .returning({ id: employees.id })
         .all();
       createdId = inserted[0].id;
+
+      syncEmployeeAccount(tx, createdId, input.fullName, input.mobile);
 
       const initial = input.initialTokens ?? 0;
       if (initial > 0) {
@@ -97,15 +123,19 @@ export function updateEmployee(db: Db, id: number, input: EmployeeUpdateInput): 
   if (!current) throw new AppError("employee_not_found", "همکار مورد نظر پیدا نشد.", 404);
 
   try {
-    db.update(employees)
-      .set({
-        fullName: input.fullName,
-        personnelCode: input.personnelCode,
-        status: input.status,
-        avatarUrl: input.avatarUrl ?? null,
-      })
-      .where(eq(employees.id, id))
-      .run();
+    db.transaction((tx) => {
+      tx.update(employees)
+        .set({
+          fullName: input.fullName,
+          personnelCode: input.personnelCode,
+          status: input.status,
+          avatarUrl: input.avatarUrl ?? null,
+        })
+        .where(eq(employees.id, id))
+        .run();
+
+      syncEmployeeAccount(tx, id, input.fullName, input.mobile);
+    });
   } catch (error) {
     rethrowUnique(error);
   }
@@ -142,6 +172,12 @@ export function deleteEmployee(db: Db, id: number): void {
           createdAt: now,
         })
         .run();
+    }
+
+    const account = tx.select({ id: users.id }).from(users).where(eq(users.employeeId, current.id)).get();
+    if (account) {
+      tx.delete(sessions).where(eq(sessions.userId, account.id)).run();
+      tx.delete(users).where(eq(users.id, account.id)).run();
     }
 
     tx.update(employees).set({ deletedAt: now }).where(eq(employees.id, current.id)).run();

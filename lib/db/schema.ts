@@ -31,5 +31,33 @@ export const transactions = sqliteTable(
   ],
 );
 
+export const users = sqliteTable("users", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  fullName: text("full_name").notNull(),
+  mobile: text("mobile").notNull().unique(),
+  passwordHash: text("password_hash").notNull(),
+  employeeId: integer("employee_id").unique().references(() => employees.id),
+  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+});
+
+export const sessions = sqliteTable(
+  "sessions",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    userId: integer("user_id")
+      .notNull()
+      .references(() => users.id),
+    accessTokenHash: text("access_token_hash").notNull().unique(),
+    refreshTokenHash: text("refresh_token_hash").notNull().unique(),
+    accessExpiresAt: integer("access_expires_at", { mode: "timestamp_ms" }).notNull(),
+    refreshExpiresAt: integer("refresh_expires_at", { mode: "timestamp_ms" }).notNull(),
+    revokedAt: integer("revoked_at", { mode: "timestamp_ms" }),
+    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (table) => [index("sessions_user_idx").on(table.userId)],
+);
+
 export type EmployeeRow = typeof employees.$inferSelect;
 export type TransactionRow = typeof transactions.$inferSelect;
+export type UserRow = typeof users.$inferSelect;
+export type SessionRow = typeof sessions.$inferSelect;
