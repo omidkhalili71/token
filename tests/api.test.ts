@@ -233,7 +233,7 @@ describe("POST/PATCH/DELETE /api/employees", () => {
 
     expect((await employees()).some((e) => e.id === saras.id)).toBe(false);
     const after = await jsonOf<{ total: number }>(await transactionsRoute.GET(new Request(url("/transactions"))));
-    expect(after.total).toBe(before.total);
+    expect(after.total).toBe(saras.balance > 0 ? before.total + 1 : before.total);
   });
 
   it("ویرایش همکار حذف‌شده 404 می‌دهد", async () => {

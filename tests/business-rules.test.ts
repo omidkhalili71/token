@@ -9,6 +9,7 @@ import { createEmployee, deleteEmployee, listEmployees, updateEmployee } from "@
 import { createTransaction, listTransactions } from "@/lib/server/transactions";
 import { getStats } from "@/lib/server/stats";
 import { transactionCreateSchema, employeeCreateSchema } from "@/lib/validation";
+import { TOKEN_VALUE_TOMAN } from "@/lib/config";
 
 let db: Db;
 
@@ -216,9 +217,79 @@ describe("قانون ۶ — تراکنش‌ها غیرقابل ویرایش و �
       initialTokens: 3,
     });
     deleteEmployee(db, created.id);
-    expect(transactionCount()).toBe(before + 1);
+    expect(transactionCount()).toBe(before + 2);
     expect(listEmployees(db).some((e) => e.id === created.id)).toBe(false);
-    expect(listTransactions(db, { pageSize: 500 }).items.some((t) => t.employeeId === created.id)).toBe(true);
+    const history = listTransactions(db, { pageSize: 500 }).items.filter((t) => t.employeeId === created.id);
+    expect(history.map((t) => t.type).sort()).toEqual(["grant", "spend"]);
+  });
+});
+
+describe("حذف همکار — پاک شدن توکن‌های باقی‌مانده", () => {
+  it("موجودی باقی‌مانده با یک تراکنش مصرف صفر می‌شود و در گزارش می‌ماند", () => {
+    const created = createEmployee(db, {
+      fullName: "مینا صادقی",
+      personnelCode: "1008",
+      status: "active",
+      avatarUrl: undefined,
+      initialTokens: 6,
+    });
+    const statsBefore = getStats(db);
+
+    deleteEmployee(db, created.id);
+
+    expect(computeBalance(db, created.id)).toBe(0);
+    const history = listTransactions(db, { pageSize: 500 }).items.filter((t) => t.employeeId === created.id);
+    expect(history).toHaveLength(2);
+    const clearing = history.find((t) => t.type === "spend");
+    expect(clearing?.description).toBe('توکن‌های "مینا صادقی" به دلیل حذف کاربر پاک شد.');
+    expect(clearing?.tokens).toBe(6);
+    expect(clearing?.amountToman).toBe(6 * TOKEN_VALUE_TOMAN);
+
+    const statsAfter = getStats(db);
+    expect(statsAfter.grantedTokens).toBe(statsBefore.grantedTokens);
+    expect(statsAfter.spentTokens).toBe(statsBefore.spentTokens + 6);
+    expect(statsAfter.totalTokens).toBe(statsBefore.totalTokens - 6);
+    expect(listEmployees(db).reduce((sum, e) => sum + e.balance, 0)).toBe(statsAfter.totalTokens);
+  });
+
+  it("همکار با موجودی صفر، ردیف تراکنش اضافی نمی‌سازد", () => {
+    const created = createEmployee(db, {
+      fullName: "سمانه قاسمی",
+      personnelCode: "1009",
+      status: "active",
+      avatarUrl: undefined,
+    });
+    const before = transactionCount();
+    deleteEmployee(db, created.id);
+    expect(transactionCount()).toBe(before);
+  });
+
+  it("همکار غیرفعال با موجودی مثبت هم با حذف صفر می‌شود", () => {
+    const neda = employeeByCode("1004");
+    const clearedTokens = neda.balance + 4;
+    createTransaction(db, { employeeId: neda.id, type: "grant", tokens: 4, description: "پاداش" });
+
+    deleteEmployee(db, neda.id);
+
+    expect(computeBalance(db, neda.id)).toBe(0);
+    const clearing = listTransactions(db, { pageSize: 500 }).items.find(
+      (t) => t.employeeId === neda.id && t.description.includes("حذف کاربر"),
+    );
+    expect(clearing?.tokens).toBe(clearedTokens);
+  });
+
+  it("حذف دوباره 404 می‌دهد و ردیف تکراری پاک‌سازی نمی‌سازد", () => {
+    const created = createEmployee(db, {
+      fullName: "طهره امینی",
+      personnelCode: "1010",
+      status: "active",
+      avatarUrl: undefined,
+      initialTokens: 2,
+    });
+    deleteEmployee(db, created.id);
+    const before = transactionCount();
+    expect(() => deleteEmployee(db, created.id)).toThrowError(/پیدا نشد/);
+    expect(transactionCount()).toBe(before);
   });
 });
 

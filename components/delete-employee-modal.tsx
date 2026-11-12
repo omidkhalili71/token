@@ -20,7 +20,9 @@ export function DeleteEmployeeModal({
   function confirm() {
     mutation.mutate(employee.id, {
       onSuccess: () => {
-        toast("success", `${employee.fullName} از لیست حذف شد؛ تاریخچه‌ی تراکنش‌هایش باقی ماند.`);
+        const cleared =
+          employee.balance > 0 ? ` ${formatNumber(employee.balance)} توکن باقی‌مانده‌اش هم پاک شد.` : "";
+        toast("success", `${employee.fullName} از لیست حذف شد؛ تاریخچه‌ی تراکنش‌هایش باقی ماند.${cleared}`);
         onClose();
       },
       onError: (error) => toast("error", error.message),
@@ -39,7 +41,7 @@ export function DeleteEmployeeModal({
       </p>
       {employee.balance > 0 ? (
         <p className="mt-2 rounded-xl bg-warn-soft px-3 py-2 text-xs font-bold text-warn">
-          {formatNumber(employee.balance)} توکن باقی‌مانده در حساب این همکار است.
+          {formatNumber(employee.balance)} توکن باقی‌مانده‌ی این همکار با یک تراکنش مصرف از حسابش پاک می‌شود.
         </p>
       ) : null}
 

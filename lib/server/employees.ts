@@ -114,10 +114,36 @@ export function updateEmployee(db: Db, id: number, input: EmployeeUpdateInput): 
 }
 
 export function deleteEmployee(db: Db, id: number): void {
-  const changed = db
-    .update(employees)
-    .set({ deletedAt: new Date() })
-    .where(and(eq(employees.id, id), notDeleted))
-    .run();
-  if (changed.changes === 0) throw new AppError("employee_not_found", "همکار مورد نظر پیدا نشد.", 404);
+  const now = new Date();
+  db.transaction((tx) => {
+    const current = tx
+      .select({ id: employees.id, fullName: employees.fullName })
+      .from(employees)
+      .where(and(eq(employees.id, id), notDeleted))
+      .get();
+    if (!current) throw new AppError("employee_not_found", "همکار مورد نظر پیدا نشد.", 404);
+
+    const balance = Number(
+      tx
+        .select({ balance: balanceSql })
+        .from(transactions)
+        .where(eq(transactions.employeeId, current.id))
+        .get()?.balance ?? 0,
+    );
+
+    if (balance > 0) {
+      tx.insert(transactions)
+        .values({
+          employeeId: current.id,
+          type: "spend",
+          tokens: balance,
+          amountToman: expectedAmountToman(balance),
+          description: `توکن‌های "${current.fullName}" به دلیل حذف کاربر پاک شد.`,
+          createdAt: now,
+        })
+        .run();
+    }
+
+    tx.update(employees).set({ deletedAt: now }).where(eq(employees.id, current.id)).run();
+  });
 }
