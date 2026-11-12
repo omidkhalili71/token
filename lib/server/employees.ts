@@ -5,7 +5,7 @@ import { balanceSql } from "./balance";
 import { AppError } from "./errors";
 import { toLatinDigits } from "../format";
 import { expectedAmountToman, type EmployeeCreateInput, type EmployeeUpdateInput } from "../validation";
-import type { EmployeeDto } from "../dto";
+import type { EmployeeDto, UserRole } from "../dto";
 import { createUserAccount } from "./auth";
 
 const notDeleted = isNull(employees.deletedAt);
@@ -15,6 +15,7 @@ const employeeColumns = {
   fullName: employees.fullName,
   personnelCode: employees.personnelCode,
   mobile: users.mobile,
+  role: users.role,
   avatarUrl: employees.avatarUrl,
   status: employees.status,
   balance: balanceSql,
@@ -64,18 +65,33 @@ function rethrowUnique(error: unknown): never {
   throw error;
 }
 
-function syncEmployeeAccount(db: AccountWriter, employeeId: number, fullName: string, mobile: string | undefined): void {
-  const account = db.select({ id: users.id }).from(users).where(eq(users.employeeId, employeeId)).get();
+type AccountInput = { mobile: string; role: UserRole };
 
-  if (account) {
+function syncEmployeeAccount(
+  db: AccountWriter,
+  employeeId: number,
+  fullName: string,
+  account: AccountInput | undefined,
+): void {
+  const existing = db.select({ id: users.id }).from(users).where(eq(users.employeeId, employeeId)).get();
+
+  if (existing) {
+    if (!account) {
+      db.update(users).set({ fullName }).where(eq(users.id, existing.id)).run();
+      return;
+    }
     db.update(users)
-      .set(mobile ? { fullName, mobile } : { fullName })
-      .where(eq(users.id, account.id))
+      .set({ fullName, mobile: account.mobile, role: account.role })
+      .where(eq(users.id, existing.id))
       .run();
     return;
   }
 
-  if (mobile) createUserAccount(db, { fullName, mobile, employeeId });
+  if (account) createUserAccount(db, { fullName, mobile: account.mobile, role: account.role, employeeId });
+}
+
+function accountInput(input: { mobile?: string; role?: UserRole }): AccountInput | undefined {
+  return input.mobile ? { mobile: input.mobile, role: input.role ?? "viewer" } : undefined;
 }
 
 export function createEmployee(db: Db, input: EmployeeCreateInput): EmployeeDto {
@@ -95,7 +111,7 @@ export function createEmployee(db: Db, input: EmployeeCreateInput): EmployeeDto 
         .all();
       createdId = inserted[0].id;
 
-      syncEmployeeAccount(tx, createdId, input.fullName, input.mobile);
+      syncEmployeeAccount(tx, createdId, input.fullName, accountInput(input));
 
       const initial = input.initialTokens ?? 0;
       if (initial > 0) {
@@ -134,7 +150,7 @@ export function updateEmployee(db: Db, id: number, input: EmployeeUpdateInput): 
         .where(eq(employees.id, id))
         .run();
 
-      syncEmployeeAccount(tx, id, input.fullName, input.mobile);
+      syncEmployeeAccount(tx, id, input.fullName, accountInput(input));
     });
   } catch (error) {
     rethrowUnique(error);

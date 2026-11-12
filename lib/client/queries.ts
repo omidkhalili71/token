@@ -3,8 +3,7 @@
 import { useCallback } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "./api";
-import type { EmployeeDto, StatsDto, TransactionDto } from "@/lib/dto";
-import type { TransactionType } from "@/lib/dto";
+import type { EmployeeDto, StatsDto, TransactionDto, TransactionType, UserRole } from "@/lib/dto";
 
 export type TransactionFilters = {
   type?: TransactionType | "";
@@ -76,6 +75,8 @@ export type EmployeePayload = {
   status: "active" | "inactive";
   avatarUrl?: string | null;
   initialTokens?: number;
+  mobile?: string;
+  role?: UserRole;
 };
 
 export function useEmployeeMutation(mode: "create" | "update", id?: number) {

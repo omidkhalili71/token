@@ -7,8 +7,10 @@ import { Avatar } from "@/components/avatar";
 import { ChangePasswordModal } from "@/components/change-password-modal";
 import { ChevronDownIcon } from "@/components/icons";
 import { useToast } from "@/components/toast";
+import { Badge } from "@/components/ui";
 import { signOut } from "@/lib/client/session";
 import { useAuth } from "@/lib/client/use-auth";
+import { ROLE_LABELS } from "@/lib/permissions";
 
 export function DashboardHeader() {
   const router = useRouter();
@@ -16,6 +18,7 @@ export function DashboardHeader() {
   const { user } = useAuth();
   const [passwordOpen, setPasswordOpen] = useState(false);
   const name = user?.fullName ?? "همکار";
+  const roleLabel = user ? ROLE_LABELS[user.role] : null;
 
   async function onSignOut() {
     await signOut();
@@ -34,6 +37,8 @@ export function DashboardHeader() {
       </div>
 
       <div className="flex shrink-0 items-center gap-3 pt-1">
+        {roleLabel ? <Badge variant="neutral">{roleLabel}</Badge> : null}
+
         <Avatar name={name} size="md" />
 
         <ActionMenu

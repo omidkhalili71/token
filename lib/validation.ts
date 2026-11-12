@@ -41,6 +41,8 @@ const fullNameField = z
 
 const statusField = z.enum(["active", "inactive"], "وضعیت نامعتبر است.");
 
+const roleField = z.enum(["admin", "operator", "viewer"], "نقش کاربر نامعتبر است.");
+
 const avatarUrlField = z
   .string()
   .trim()
@@ -63,6 +65,7 @@ export const employeeCreateSchema = z
     fullName: fullNameField,
     personnelCode: personnelCodeField,
     mobile: mobileField.optional(),
+    role: roleField.optional(),
     status: statusField,
     avatarUrl: avatarUrlField,
     initialTokens: z
@@ -79,6 +82,7 @@ export const employeeUpdateSchema = z
     fullName: fullNameField,
     personnelCode: personnelCodeField,
     mobile: mobileField.optional(),
+    role: roleField.optional(),
     status: statusField,
     avatarUrl: avatarUrlField,
   })

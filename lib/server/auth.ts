@@ -2,7 +2,8 @@ import { eq } from "drizzle-orm";
 import { DEFAULT_PASSWORD } from "../config";
 import type { Db } from "../db";
 import { users } from "../db/schema";
-import type { SessionDto, UserDto } from "../dto";
+import type { SessionDto, UserDto, UserRole } from "../dto";
+import { can, type Capability } from "../permissions";
 import type { ChangePasswordInput, LoginInput } from "../validation";
 import { AppError } from "./errors";
 import { hashPassword, verifyPassword, verifyPasswordOrPad } from "./passwords";
@@ -29,9 +30,28 @@ export function requireSession(req: Request, db: Db, now = new Date()): Authenti
   return session;
 }
 
+export function requireCapability(
+  req: Request,
+  db: Db,
+  capability: Capability,
+  now = new Date(),
+): AuthenticatedSession {
+  const session = requireSession(req, db, now);
+  if (!can(session.user.role, capability)) {
+    throw new AppError("forbidden", "نقش شما اجازه‌ی انجام این کار را ندارد.", 403);
+  }
+  return session;
+}
+
 export function authenticate(db: Db, input: LoginInput, now = new Date()): SessionDto {
   const row = db
-    .select({ id: users.id, fullName: users.fullName, mobile: users.mobile, passwordHash: users.passwordHash })
+    .select({
+      id: users.id,
+      fullName: users.fullName,
+      mobile: users.mobile,
+      role: users.role,
+      passwordHash: users.passwordHash,
+    })
     .from(users)
     .where(eq(users.mobile, input.identifier))
     .get();
@@ -41,7 +61,7 @@ export function authenticate(db: Db, input: LoginInput, now = new Date()): Sessi
     throw new AppError("invalid_credentials", "شماره موبایل یا رمز عبور اشتباه است.", 401);
   }
 
-  const user: UserDto = { id: row.id, fullName: row.fullName, mobile: row.mobile };
+  const user: UserDto = { id: row.id, fullName: row.fullName, mobile: row.mobile, role: row.role };
   return { ...issueSession(db, user.id, now), user };
 }
 
@@ -87,13 +107,21 @@ export function changePassword(
 
 export function createUserAccount(
   db: Pick<Db, "insert">,
-  input: { fullName: string; mobile: string; employeeId?: number | null; password?: string; now?: Date },
+  input: {
+    fullName: string;
+    mobile: string;
+    role: UserRole;
+    employeeId?: number | null;
+    password?: string;
+    now?: Date;
+  },
 ): void {
   db.insert(users)
     .values({
       fullName: input.fullName,
       mobile: input.mobile,
       passwordHash: hashPassword(input.password ?? DEFAULT_PASSWORD),
+      role: input.role,
       employeeId: input.employeeId ?? null,
       createdAt: input.now ?? new Date(),
     })

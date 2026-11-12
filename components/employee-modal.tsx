@@ -10,6 +10,7 @@ import { useToast } from "@/components/toast";
 import { useEmployeeMutation, type EmployeePayload } from "@/lib/client/queries";
 import { TOKEN_VALUE_TOMAN } from "@/lib/config";
 import { formatNumber, formatToman, toLatinDigits } from "@/lib/format";
+import { ASSIGNABLE_ROLES, ROLE_LABELS } from "@/lib/permissions";
 import { employeeCreateSchema } from "@/lib/validation";
 import type { EmployeeDto, EmployeeStatus } from "@/lib/dto";
 
@@ -41,21 +42,25 @@ export function EmployeeModal({
     defaultValues: {
       fullName: employee?.fullName ?? "",
       personnelCode: employee?.personnelCode ?? "",
+      mobile: employee?.mobile ?? "",
+      role: employee?.role ?? "viewer",
       status: employee?.status ?? "active",
       avatarUrl: employee?.avatarUrl ?? "",
     },
   });
 
-  const [previewName, previewAvatar] = watch(["fullName", "avatarUrl"]);
+  const [previewName, previewAvatar, previewMobile] = watch(["fullName", "avatarUrl", "mobile"]);
 
   const onSubmit = handleSubmit((values) => {
+    const account = values.mobile ? { mobile: values.mobile, role: values.role ?? "viewer" } : {};
     const payload: EmployeePayload = isCreate
-      ? values
+      ? { ...values, ...account }
       : {
           fullName: values.fullName,
           personnelCode: values.personnelCode,
           status: values.status,
           avatarUrl: values.avatarUrl,
+          ...account,
         };
 
     mutation.mutate(payload, {
@@ -107,6 +112,40 @@ export function EmployeeModal({
               className={inputClass}
               {...register("personnelCode")}
             />
+          </Field>
+
+          <Field
+            label="شماره موبایل (اختیاری)"
+            htmlFor="mobile"
+            error={errors.mobile?.message}
+            hint="با این شماره وارد سامانه می‌شود و حسابش با رمز پیش‌فرض ۱۲۳۴۵۶ ساخته می‌شود."
+          >
+            <input
+              id="mobile"
+              type="tel"
+              inputMode="tel"
+              autoComplete="off"
+              dir="ltr"
+              aria-invalid={Boolean(errors.mobile)}
+              placeholder="09xxxxxxxxx"
+              className={`${inputClass} text-start`}
+              {...register("mobile", {
+                setValueAs: (value) => {
+                  const digits = toLatinDigits(String(value ?? "").trim());
+                  return digits === "" ? undefined : digits;
+                },
+              })}
+            />
+          </Field>
+
+          <Field label="نقش کاربری" htmlFor="role" hint={previewMobile ? undefined : "نقش فقط برای حساب‌های دارای موبایل اعمال می‌شود."}>
+            <select id="role" className={inputClass} disabled={!previewMobile} {...register("role")}>
+              {ASSIGNABLE_ROLES.map((role) => (
+                <option key={role} value={role}>
+                  {ROLE_LABELS[role]}
+                </option>
+              ))}
+            </select>
           </Field>
 
           <Field label="وضعیت" htmlFor="status" required>

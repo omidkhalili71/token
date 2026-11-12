@@ -14,6 +14,7 @@ export class AppError extends Error {
 export type ErrorCode =
   | "invalid_input"
   | "unauthorized"
+  | "forbidden"
   | "invalid_credentials"
   | "employee_not_found"
   | "duplicate_personnel_code"

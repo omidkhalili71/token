@@ -5,6 +5,9 @@ import type { Db } from "./index";
 import { employees, transactions, users } from "./schema";
 import { expectedAmountToman } from "../validation";
 import { hashPassword } from "../server/passwords";
+import type { UserRole } from "../dto";
+
+type AccountWriter = Pick<Db, "insert" | "select">;
 
 type SeedEntry = { type: "grant" | "spend"; tokens: number; description: string };
 type SeedEmployee = {
@@ -12,6 +15,7 @@ type SeedEmployee = {
   personnelCode: string;
   status: "active" | "inactive";
   entries: SeedEntry[];
+  account?: { mobile: string; role: UserRole };
 };
 
 const SEED_EMPLOYEES: SeedEmployee[] = [
@@ -19,6 +23,7 @@ const SEED_EMPLOYEES: SeedEmployee[] = [
     fullName: "علی رضایی",
     personnelCode: "1001",
     status: "active",
+    account: { mobile: "09120000001", role: "operator" },
     entries: [
       { type: "grant", tokens: 20, description: "پاداش ماهانه" },
       { type: "spend", tokens: 8, description: "خرید بستنی در کافه شرکت" },
@@ -28,6 +33,7 @@ const SEED_EMPLOYEES: SeedEmployee[] = [
     fullName: "مریم احمدی",
     personnelCode: "1002",
     status: "active",
+    account: { mobile: "09120000002", role: "viewer" },
     entries: [
       { type: "grant", tokens: 18, description: "پاداش ماهانه" },
       { type: "spend", tokens: 10, description: "خرید نوشیدنی" },
@@ -88,16 +94,25 @@ function isNullDeleted() {
 }
 
 export function ensureDefaultAdmin(db: Db, now = new Date()): void {
-  const existing = db.select({ id: users.id }).from(users).where(eq(users.mobile, DEFAULT_ADMIN_MOBILE)).get();
+  ensureUserAccount(db, { fullName: DEFAULT_ADMIN_FULL_NAME, mobile: DEFAULT_ADMIN_MOBILE, role: "admin" }, now);
+}
+
+export function ensureUserAccount(
+  db: AccountWriter,
+  input: { fullName: string; mobile: string; role: UserRole; employeeId?: number | null },
+  now = new Date(),
+): void {
+  const existing = db.select({ id: users.id }).from(users).where(eq(users.mobile, input.mobile)).get();
   if (existing) return;
 
   try {
     db.insert(users)
       .values({
-        fullName: DEFAULT_ADMIN_FULL_NAME,
-        mobile: DEFAULT_ADMIN_MOBILE,
+        fullName: input.fullName,
+        mobile: input.mobile,
         passwordHash: hashPassword(DEFAULT_PASSWORD),
-        employeeId: null,
+        role: input.role,
+        employeeId: input.employeeId ?? null,
         createdAt: now,
       })
       .run();
@@ -131,6 +146,19 @@ export function seedDatabase(db: Db, now = new Date()): boolean {
     });
 
     SEED_EMPLOYEES.forEach((employee, employeeIndex) => {
+      if (employee.account) {
+        ensureUserAccount(
+          tx,
+          {
+            fullName: employee.fullName,
+            mobile: employee.account.mobile,
+            role: employee.account.role,
+            employeeId: ids[employeeIndex],
+          },
+          now,
+        );
+      }
+
       for (const entry of employee.entries) {
         tx.insert(transactions)
           .values({

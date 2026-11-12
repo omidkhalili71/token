@@ -5,6 +5,7 @@ import { Avatar } from "@/components/avatar";
 import { BoltIcon, CoinIcon, CoinPlusIcon, MoreIcon, PlusIcon, SearchIcon } from "@/components/icons";
 import { Badge, SectionCard, StateMessage } from "@/components/ui";
 import { useEmployees } from "@/lib/client/queries";
+import { useCan } from "@/lib/client/use-auth";
 import { formatNumber, toPersianDigits } from "@/lib/format";
 import type { EmployeeDto } from "@/lib/dto";
 
@@ -16,7 +17,16 @@ export type EmployeeActions = {
   onGrant: (employee: EmployeeDto) => void;
 };
 
+type RowPermissions = {
+  canWrite: boolean;
+  canUpdate: boolean;
+  canDelete: boolean;
+};
+
 const HEADERS = ["نام و نام خانوادگی", "کد پرسنلی", "تعداد توکن", "وضعیت", "عملیات"];
+
+const NO_CREATE_TITLE = "افزودن همکار فقط برای نقش «مدیر سیستم» فعال است.";
+const NO_WRITE_TITLE = "با نقش کنونی شما امکان ثبت یا خرج توکن وجود ندارد.";
 
 export function EmployeesSection({
   search,
@@ -27,6 +37,12 @@ export function EmployeesSection({
   onSearchChange: (value: string) => void;
   actions: EmployeeActions;
 }) {
+  const canCreate = useCan("employee:create");
+  const permissions: RowPermissions = {
+    canWrite: useCan("transaction:write"),
+    canUpdate: useCan("employee:update"),
+    canDelete: useCan("employee:delete"),
+  };
   const { data, isPending, isError, refetch } = useEmployees(search);
   const items = data?.items ?? [];
 
@@ -49,7 +65,9 @@ export function EmployeesSection({
         <button
           type="button"
           onClick={actions.onAdd}
-          className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-primary-hover"
+          disabled={!canCreate}
+          title={canCreate ? undefined : NO_CREATE_TITLE}
+          className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none disabled:hover:bg-primary"
         >
           <PlusIcon className="h-4 w-4" />
           افزودن همکار
@@ -104,7 +122,7 @@ export function EmployeesSection({
             ) : null}
 
             {items.map((employee) => (
-              <EmployeeRow key={employee.id} employee={employee} actions={actions} />
+              <EmployeeRow key={employee.id} employee={employee} actions={actions} permissions={permissions} />
             ))}
           </tbody>
         </table>
@@ -113,8 +131,21 @@ export function EmployeesSection({
   );
 }
 
-function EmployeeRow({ employee, actions }: { employee: EmployeeDto; actions: EmployeeActions }) {
-  const canSpend = employee.status === "active" && employee.balance > 0;
+function EmployeeRow({
+  employee,
+  actions,
+  permissions,
+}: {
+  employee: EmployeeDto;
+  actions: EmployeeActions;
+  permissions: RowPermissions;
+}) {
+  const canSpend = permissions.canWrite && employee.status === "active" && employee.balance > 0;
+  const spendTitle = permissions.canWrite
+    ? canSpend
+      ? undefined
+      : "موجودی این همکار صفر است یا غیرفعال است."
+    : NO_WRITE_TITLE;
 
   return (
     <tr className="border-t border-line transition hover:bg-canvas/50">
@@ -146,8 +177,10 @@ function EmployeeRow({ employee, actions }: { employee: EmployeeDto; actions: Em
           <button
             type="button"
             onClick={() => actions.onGrant(employee)}
+            disabled={!permissions.canWrite}
             aria-label={`ثبت توکن برای ${employee.fullName}`}
-            className="inline-flex items-center gap-1.5 rounded-xl bg-danger-soft px-3 py-2 text-xs font-bold text-danger transition hover:brightness-95"
+            title={permissions.canWrite ? undefined : NO_WRITE_TITLE}
+            className="inline-flex items-center gap-1.5 rounded-xl bg-danger-soft px-3 py-2 text-xs font-bold text-danger transition hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:brightness-100"
           >
             <CoinPlusIcon className="h-4 w-4" />
             ثبت توکن
@@ -158,30 +191,42 @@ function EmployeeRow({ employee, actions }: { employee: EmployeeDto; actions: Em
             onClick={() => actions.onSpend(employee)}
             disabled={!canSpend}
             aria-label={`خرج توکن برای ${employee.fullName}`}
-            title={canSpend ? undefined : "موجودی این همکار صفر است یا غیرفعال است."}
+            title={spendTitle}
             className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-3 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none disabled:hover:bg-primary"
           >
             <BoltIcon className="h-4 w-4" />
             خرج توکن
           </button>
 
-          <RowActionsMenu employee={employee} actions={actions} />
+          <RowActionsMenu employee={employee} actions={actions} permissions={permissions} />
         </div>
       </td>
     </tr>
   );
 }
 
-function RowActionsMenu({ employee, actions }: { employee: EmployeeDto; actions: EmployeeActions }) {
+function RowActionsMenu({
+  employee,
+  actions,
+  permissions,
+}: {
+  employee: EmployeeDto;
+  actions: EmployeeActions;
+  permissions: RowPermissions;
+}) {
+  const entries = [
+    permissions.canUpdate ? { label: "ویرایش", run: () => actions.onEdit(employee) } : null,
+    permissions.canDelete ? { label: "حذف", danger: true, run: () => actions.onDelete(employee) } : null,
+  ].filter((entry): entry is NonNullable<typeof entry> => entry !== null);
+
+  if (entries.length === 0) return null;
+
   return (
     <ActionMenu
       label={`عملیات ${employee.fullName}`}
       icon={<MoreIcon className="h-4 w-4" />}
       triggerClassName="ms-auto grid h-9 w-9 place-items-center rounded-xl transition bg-canvas text-muted hover:bg-line/60 hover:text-ink"
-      entries={[
-        { label: "ویرایش", run: () => actions.onEdit(employee) },
-        { label: "حذف", danger: true, run: () => actions.onDelete(employee) },
-      ]}
+      entries={entries}
     />
   );
 }

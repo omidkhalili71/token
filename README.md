@@ -13,7 +13,9 @@ pnpm dev
 
 بعد از باز کردن http://localhost:3000 هیچ تنظیم دستی لازم نیست: برنامه خودش migration را اجرا
 می‌کند و اگر دیتابیسی نباشد داده‌ی نمونه را seed می‌کند. صفحه‌ی `/login` کاربر را می‌خواهد و
-حساب پیش‌فرض مدیر با نام کاربری `admin` و رمز `123456` هنگام seed ساخته می‌شود.
+حساب پیش‌فرض مدیر با نام کاربری `admin` و رمز `123456` هنگام seed ساخته می‌شود. داده‌ی نمونه
+دو حساب دیگر هم می‌سازد تا نقش‌ها قابل امتحان باشند: `09120000001` با نقش اپراتور و
+`09120000002` با نقش بیننده (رمز هر سه `123456`).
 
 > رمز پیش‌فرض فقط برای محیط توسعه است؛ در محیط واقعی آن را عوض کنید.
 
@@ -39,7 +41,7 @@ lib/          منطق مشترک: اعتبارسنجی، DB، سرویس سرو
 drizzle/      فایل migration و snapshot متادیتای آن
 data/app.db   دیتابیس SQLite (ساخته‌ی محلی، در repo نیست)
 scripts/      ensure-db / migrate / seed / reset
-tests/        تست‌های Vitest (قوانین کسب‌وکار، API، احراز هویت، تقویم شمسی)
+tests/        تست‌های Vitest (قوانین کسب‌وکار، API، احراز هویت، نقش‌ها، تقویم شمسی)
 ```
 
 ### `app/`
@@ -60,18 +62,20 @@ tests/        تست‌های Vitest (قوانین کسب‌وکار، API، ا�
 
 هر route فقط ورودی/خروجی را تبدیل می‌کند؛ تصمیم‌های کسب‌وکار در `lib/server` است تا
 بتوان همان تابع‌ها را مستقیم تست کرد. مسیرهای غیر از `api/auth/login` و `api/auth/refresh`
-با `requireSession` محافظت می‌شوند. همه با `export const dynamic = "force-dynamic"`
+با `requireCapability` محافظت می‌شوند: اول توکن و نشست سنجیده می‌شود (`401`) و بعد نقش
+کاربر (`403`). همه با `export const dynamic = "force-dynamic"`
 روی SQLite نوشته می‌شوند (کش نشوند).
 
 ### `lib/`
 
 - `validation.ts` — اسکیماهای Zod، مشترک بین فرم کلاینت و `parse` سرور (قانون: یک تعریف، دو مصرف). نرمال‌سازی موبایل به فرم `09xxxxxxxxx` اینجا است.
-- `db/schema.ts` — جداول `employees`، `transactions`، `users` و `sessions` (Drizzle).
+- `db/schema.ts` — جداول `employees`، `transactions`، `users` و `sessions` (Drizzle). ستون `users.role` نقش را نگه می‌دارد.
 - `db/index.ts` — connection تکی با WAL و `foreign_keys ON`.
 - `db/bootstrap.ts` — اجرای migration و seed در هنگام استارت.
-- `db/seed.ts` — داده‌ی نمونه: ۵ همکار + تراکنش‌های این ماه، و حساب مدیر پیش‌فرض (`ensureDefaultAdmin`، idempotent).
+- `db/seed.ts` — داده‌ی نمونه: ۵ همکار + تراکنش‌های این ماه، حساب مدیر پیش‌فرض (`ensureDefaultAdmin`، idempotent) و دو حساب اپراتور/بیننده روی دو همکار نمونه.
+- `permissions.ts` — ماتریس نقش‌به‌دسترسی (`MATRIX`، `can`) و برچسب فارسی نقش‌ها؛ هم سرور هم UI از همین یک فایل استفاده می‌کند.
 - `server/employees.ts`، `server/transactions.ts`، `server/stats.ts` — کوئری‌ها و قوانین. `employees` حساب کاربری همکار (`users.mobile`) را هم می‌خواند و هم می‌سازد.
-- `server/auth.ts` — `authenticate`/`refreshSession`/`logout`/`changePassword` و `requireSession`.
+- `server/auth.ts` — `authenticate`/`refreshSession`/`logout`/`changePassword` و `requireSession`/`requireCapability`.
 - `server/sessions.ts` — توکن‌های تصادفی ۲۵۶ بیتی؛ فقط هش SHA-۲۵6 آن‌ها در DB می‌ماند.
 - `server/passwords.ts` — هش `scrypt` با پارامترهای ذخیره‌شده در رشته، و مقایسه‌ی زمان‌ثابت (برای کاربر ناشناس هم padding می‌شود تا زمان ورود oneof نشود).
 - `server/balance.ts` — هسته‌ی قانون موجودی: خوانش و نوشتن داخل یک `db.transaction`.
@@ -91,15 +95,15 @@ tests/        تست‌های Vitest (قوانین کسب‌وکار، API، ا�
 ### `components/`
 
 - `dashboard.tsx` — مالح state صفحه: جستجو، فیلترها، صفحه‌بندی و اینکه کدام مودال باز است.
-- `dashboard-header.tsx` — عنوان و منوی کاربر بالای صفحه (تغییر رمز عبور، خروج) با نام کاربر جاری.
+- `dashboard-header.tsx` — عنوان و منوی کاربر بالای صفحه (تغییر رمز عبور، خروج) با نام و نقش کاربر جاری.
 - `session-gate.tsx` — تا نشست با `/api/auth/me` تأیید نشود داشبورد را نشان نمی‌دهد؛ بدون نشست به `/login` می‌رود.
 - `login-form.tsx` — فرم ورود (موبایل و رمز) با پیام خطای سرور.
 - `change-password-modal.tsx` — رمز فعلی، رمز جدید و تکرار آن؛ اعتبارسنجی در فرم و مجدد سمت سرور.
 - `action-menu.tsx` — منوی کشویی مشترک (موقعیت `fixed` با اصلاح اختلاف مبدأ در RTL، Esc و کلیدهای جهت‌دار، بستن با کلیک بیرون یا اسکرول).
-- `employees-section.tsx` / `transactions-section.tsx` — دو جدول اصلی. در جدول همکاران، «ویرایش» و «حذف» در منوی سه‌نقطه‌ی انتهای هر ردیف هستند.
+- `employees-section.tsx` / `transactions-section.tsx` — دو جدول اصلی. در جدول همکاران، «ویرایش» و «حذف» در منوی سه‌نقطه‌ی انتهای هر ردیف هستند؛ اگر نقش جاری هیچ‌کدام را نداشته باشد کل منو نمایش داده نمی‌شود.
 - `stat-cards.tsx` — چهار کارت آماری.
 - `transaction-modal.tsx` — خرج/ثبت توکن (stepper + توضیح الزامی + مبلغ تومانی).
-- `employee-modal.tsx` — افزودن و ویرایش همکار (یک کامپوننت، دو حالت).
+- `employee-modal.tsx` — افزودن و ویرایش همکار (یک کامپوننت، دو حالت)؛ موبایل و نقش کاربری اینجا انتخاب می‌شود و تا موبایل وارد نشود انتخاب نقش غیرفعال است.
 - `delete-employee-modal.tsx` — تأیید حذف نرم.
 - `jalali-range-picker.tsx` — انتخاب بازه‌ی تاریخ شمسی با دو کلیک.
 - `modal.tsx` / `field.tsx` / `toast.tsx` / `ui.tsx` / `avatar.tsx` / `icons.tsx` — قطعات پایه.
@@ -108,6 +112,8 @@ tests/        تست‌های Vitest (قوانین کسب‌وکار، API، ا�
 ## قوانینی که در سرور enforce می‌شوند
 
 - هر مسیر غیر از `login` و `refresh` بدون Access Token معتبر `401` با کد `unauthorized` می‌دهد؛ محدود کردن فقط در UI کافی نیست.
+- نقش، منبع واقعی دسترسی است: `admin` همه‌کار، `operator` فقط خواندن همکار و ثبت/خرج توکن، `viewer` فقط خواندن. هر درخواستِ خارج از ماتریس `403` با کد `forbidden` می‌گیرد، حتی اگر UI مربوطه باز باشد.
+- نقش فقط هنگام ساخت یا ویرایش همکار و فقط توسط مدیر (دارای `employee:create`/`employee:update`) قابل انتخاب است.
 - تغییر رمز عبور، رمز فعلی را سمت سرور می‌سنجد (`invalid_credentials` با `403`) و بقیه‌ی نشست‌های همان کاربر را باطل می‌کند.
 - با حذف همکار، حساب کاربری و نشست‌های او هم پاک می‌شوند؛ تراکنش‌هایش می‌ماند.
 - موجودی نمی‌تواند منفی شود؛ درخواست مستقیم API هم رد می‌شود (`insufficient_balance`).
@@ -125,11 +131,12 @@ tests/        تست‌های Vitest (قوانین کسب‌وکار، API، ا�
 pnpm test
 ```
 
-۶۷ تست در چهار فایل:
+۸۲ تست در پنج فایل:
 
 - `tests/business-rules.test.ts` — قوانین موجودی، حذف نرم، جستجو با هر دو نوع رقم، فیلترها.
 - `tests/api.test.ts` — صدا زدن مستقیم route handler ها با `new Request(...)` و هدر `Authorization` روی یک DB موقت.
 - `tests/auth.test.ts` — ورود، `401` بدون توکن، تازه‌سازی و باطل شدن جفت قبلی، خروج، تغییر رمز و اثر آن روی نشست‌های دیگر، حساب خودکار همکار.
+- `tests/rbac.test.ts` — ماتریس `can`، `403` برای نقش‌های پایین‌تر روی هر endpoint، ساخت همکار با نقش و تغییر نقش آن.
 - `tests/jalali.test.ts` — شبکه‌ی ماه شمسی، مرزهای بازه و تبدیل‌ها.
 
 ## تصمیم‌های فنی

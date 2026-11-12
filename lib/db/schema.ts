@@ -36,6 +36,9 @@ export const users = sqliteTable("users", {
   fullName: text("full_name").notNull(),
   mobile: text("mobile").notNull().unique(),
   passwordHash: text("password_hash").notNull(),
+  role: text("role", { enum: ["admin", "operator", "viewer"] })
+    .notNull()
+    .default("viewer"),
   employeeId: integer("employee_id").unique().references(() => employees.id),
   createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
 });

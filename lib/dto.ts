@@ -1,11 +1,13 @@
 export type EmployeeStatus = "active" | "inactive";
 export type TransactionType = "grant" | "spend";
+export type UserRole = "admin" | "operator" | "viewer";
 
 export type EmployeeDto = {
   id: number;
   fullName: string;
   personnelCode: string;
   mobile: string | null;
+  role: UserRole | null;
   avatarUrl: string | null;
   status: EmployeeStatus;
   balance: number;
@@ -35,6 +37,7 @@ export type UserDto = {
   id: number;
   fullName: string;
   mobile: string;
+  role: UserRole;
 };
 
 export type SessionDto = {

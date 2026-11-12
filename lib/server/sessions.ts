@@ -45,7 +45,13 @@ export function issueSession(db: Db, userId: number, now = new Date()): IssuedTo
 
 export function resolveAccessToken(db: Db, token: string, now = new Date()): AuthenticatedSession | null {
   const row = db
-    .select({ sessionId: sessions.id, userId: users.id, fullName: users.fullName, mobile: users.mobile })
+    .select({
+      sessionId: sessions.id,
+      userId: users.id,
+      fullName: users.fullName,
+      mobile: users.mobile,
+      role: users.role,
+    })
     .from(sessions)
     .innerJoin(users, eq(users.id, sessions.userId))
     .where(
@@ -57,12 +63,20 @@ export function resolveAccessToken(db: Db, token: string, now = new Date()): Aut
     )
     .get();
 
-  return row ? { sessionId: row.sessionId, user: { id: row.userId, fullName: row.fullName, mobile: row.mobile } } : null;
+  return row
+    ? { sessionId: row.sessionId, user: { id: row.userId, fullName: row.fullName, mobile: row.mobile, role: row.role } }
+    : null;
 }
 
 export function resolveRefreshToken(db: Db, token: string, now = new Date()): AuthenticatedSession | null {
   const row = db
-    .select({ sessionId: sessions.id, userId: users.id, fullName: users.fullName, mobile: users.mobile })
+    .select({
+      sessionId: sessions.id,
+      userId: users.id,
+      fullName: users.fullName,
+      mobile: users.mobile,
+      role: users.role,
+    })
     .from(sessions)
     .innerJoin(users, eq(users.id, sessions.userId))
     .where(
@@ -74,7 +88,9 @@ export function resolveRefreshToken(db: Db, token: string, now = new Date()): Au
     )
     .get();
 
-  return row ? { sessionId: row.sessionId, user: { id: row.userId, fullName: row.fullName, mobile: row.mobile } } : null;
+  return row
+    ? { sessionId: row.sessionId, user: { id: row.userId, fullName: row.fullName, mobile: row.mobile, role: row.role } }
+    : null;
 }
 
 export function revokeSession(db: Db, sessionId: number, now = new Date()): void {
