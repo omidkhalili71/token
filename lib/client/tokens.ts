@@ -11,7 +11,9 @@ export type AuthSnapshot = {
 
 const listeners = new Set<() => void>();
 
-let snapshot: AuthSnapshot = { status: "loading", user: null };
+const LOADING_SNAPSHOT: AuthSnapshot = { status: "loading", user: null };
+
+let snapshot: AuthSnapshot = LOADING_SNAPSHOT;
 let hydrated = false;
 
 function emit(): void {
@@ -60,12 +62,12 @@ function hydrate(): AuthSnapshot {
 }
 
 export function getAuthSnapshot(): AuthSnapshot {
-  if (typeof window === "undefined") return { status: "loading", user: null };
+  if (typeof window === "undefined") return LOADING_SNAPSHOT;
   return hydrate();
 }
 
 export function getServerAuthSnapshot(): AuthSnapshot {
-  return { status: "loading", user: null };
+  return LOADING_SNAPSHOT;
 }
 
 export function accessToken(): string | null {
@@ -88,7 +90,8 @@ export function saveSession(session: SessionDto): void {
   publish({ status: "authenticated", user: session.user });
 }
 
-export function saveTokens(accessTokenValue: string, refreshTokenValue: string): void {  hydrated = true;
+export function saveTokens(accessTokenValue: string, refreshTokenValue: string): void {
+  hydrated = true;
   writeStorage(ACCESS_KEY, accessTokenValue);
   writeStorage(REFRESH_KEY, refreshTokenValue);
   emit();

@@ -49,7 +49,7 @@ export function EmployeeModal({
     },
   });
 
-  const [previewName, previewAvatar, previewMobile] = watch(["fullName", "avatarUrl", "mobile"]);
+  const [previewName, previewAvatar] = watch(["fullName", "avatarUrl"]);
 
   const onSubmit = handleSubmit((values) => {
     const account = values.mobile ? { mobile: values.mobile, role: values.role ?? "viewer" } : {};
@@ -138,8 +138,12 @@ export function EmployeeModal({
             />
           </Field>
 
-          <Field label="نقش کاربری" htmlFor="role" hint={previewMobile ? undefined : "نقش فقط برای حساب‌های دارای موبایل اعمال می‌شود."}>
-            <select id="role" className={inputClass} disabled={!previewMobile} {...register("role")}>
+          <Field
+            label="نقش کاربری"
+            htmlFor="role"
+            hint="نقش روی حساب کاربری این همکار اعمال می‌شود؛ اگر شماره موبایل را خالی بگذارید حسابی ساخته نمی‌شود."
+          >
+            <select id="role" className={inputClass} {...register("role")}>
               {ASSIGNABLE_ROLES.map((role) => (
                 <option key={role} value={role}>
                   {ROLE_LABELS[role]}

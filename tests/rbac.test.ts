@@ -230,6 +230,51 @@ describe("انتشار نقش هنگام ثبت همکار", () => {
     expect((await signIn("09127778899")).user.role).toBe("viewer");
   });
 
+  it("ارتقای حساب به اپراتور همان نشست را فوراً اپراتور می‌کند", async () => {
+    const asAdmin = authorized(await tokenFor("admin"));
+    const created = await jsonOf<EmployeeDto>(
+      await asAdmin("POST", "/employees", {
+        fullName: "کامران شدی",
+        personnelCode: "7300",
+        mobile: "09123451122",
+        role: "viewer",
+        status: "active",
+      }),
+    );
+
+    const session = await signIn("09123451122");
+    const asNewUser = authorized(session.accessToken);
+    expect((await asNewUser("POST", "/transactions", { employeeId: created.id, type: "grant", tokens: 2, description: "تست" })).status).toBe(403);
+
+    await asAdmin("PATCH", `/employees/${created.id}`, {
+      fullName: created.fullName,
+      personnelCode: created.personnelCode,
+      mobile: created.mobile,
+      role: "operator",
+      status: created.status,
+    });
+
+    const grant = await asNewUser("POST", "/transactions", { employeeId: created.id, type: "grant", tokens: 2, description: "تست" });
+    expect(grant.status).toBe(201);
+    expect((await asNewUser("POST", "/employees", { fullName: "نه", personnelCode: "7301", status: "active" })).status).toBe(403);
+  });
+
+  it("نقش مدیر روی حساب همکار هم قابل انتخاب است", async () => {
+    const asAdmin = authorized(await tokenFor("admin"));
+    const created = await jsonOf<EmployeeDto>(
+      await asAdmin("POST", "/employees", {
+        fullName: "مریم صدر",
+        personnelCode: "7400",
+        mobile: "09123453344",
+        role: "admin",
+        status: "active",
+      }),
+    );
+    expect(created.role).toBe("admin");
+    const session = await signIn("09123453344");
+    expect((await authorized(session.accessToken)("POST", "/employees", { fullName: "همکار جدید", personnelCode: "7401", status: "active" })).status).toBe(201);
+  });
+
   it("همکار بدون موبایل حساب و نقش ندارد", async () => {
     const asAdmin = authorized(await tokenFor("admin"));
     const created = await jsonOf<EmployeeDto>(
