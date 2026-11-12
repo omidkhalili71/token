@@ -1,6 +1,5 @@
 "use client";
 
-/** برچسب + خطای مشترک برای فیلدهای فرم. */
 export function Field({
   label,
   htmlFor,

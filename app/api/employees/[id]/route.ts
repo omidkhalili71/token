@@ -16,7 +16,6 @@ export async function PATCH(req: Request, { params }: Context) {
   });
 }
 
-/** soft delete: ردیف می‌ماند و فقط `deleted_at` پر می‌شود، تا تاریخچه از دست نرود. */
 export async function DELETE(_req: Request, { params }: Context) {
   return route(async () => {
     const { id } = await params;

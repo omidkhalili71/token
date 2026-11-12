@@ -1,6 +1,5 @@
 import { initialsOf } from "@/lib/format";
 
-/** آواتار: تصویر اگر بود، وگرنه حروف اول نام روی پس‌زمینه‌ی رنگی. */
 export function Avatar({
   name,
   src,

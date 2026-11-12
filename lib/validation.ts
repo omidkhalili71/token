@@ -1,12 +1,7 @@
-/**
- * اسکیمای‌های Zod مشترک بین کلاینت و سرور (قانون ۶.۷ از spec).
- * هیچ import سمت سرور اینجا مجاز نیست.
- */
 import { z } from "zod";
 import { TOKEN_VALUE_RIAL } from "./config";
 import { toLatinDigits } from "./format";
 
-/** کد پرسنلی: فقط رقم (ارقام فارسی پذیرفته و نرمال می‌شوند). */
 const personnelCodeField = z
   .string({ error: "کد پرسنلی الزامی است." })
   .trim()
@@ -21,7 +16,6 @@ const fullNameField = z
 
 const statusField = z.enum(["active", "inactive"], "وضعیت نامعتبر است.");
 
-/** آدرس آواتار اختیاری: http(s) یا data URL. رشته‌ی خالی یعنی «ندارد». */
 const avatarUrlField = z
   .string()
   .trim()
@@ -45,7 +39,6 @@ export const employeeCreateSchema = z
     personnelCode: personnelCodeField,
     status: statusField,
     avatarUrl: avatarUrlField,
-    /** موجودی اولیه؛ اگر بزرگ‌تر از صفر باشد یک تراکنش grant ساخته می‌شود. */
     initialTokens: z
       .number("موجودی اولیه باید عدد باشد.")
       .int("موجودی اولیه باید عدد صحیح باشد.")
@@ -64,10 +57,6 @@ export const employeeUpdateSchema = z
   })
   .strict();
 
-/**
- * ورودی این اسکیما JSON است، پس `z.number()` بدون coerce تا نوع ورودی و
- * خروجی یکی بماند و مستقیم به React Hook Form داده شود.
- */
 export const transactionCreateSchema = z
   .object({
     employeeId: z.number("شناسه‌ی همکار نامعتبر است.").int().positive(),
@@ -77,7 +66,6 @@ export const transactionCreateSchema = z
       .int("تعداد توکن باید عدد صحیح باشد.")
       .min(1, "تعداد توکن باید حداقل ۱ باشد.")
       .max(100000, "تعداد توکن حداکثر می‌تواند ۱۰۰٬۰۰۰ باشد."),
-    /** برای grant سرور خودش محاسبه می‌کند؛ برای spend کاربر می‌تواند دستی وارد کند. */
     amountRial: z
       .number("مبلغ باید عدد باشد.")
       .int("مبلغ باید عدد صحیح باشد.")
@@ -94,7 +82,6 @@ export const employeesQuerySchema = z.object({
 
 export const transactionsQuerySchema = z.object({
   type: z.enum(["spend", "grant"]).optional(),
-  /** ISO میلادی؛ تبدیل تقویم شمسی سمت کلاینت انجام می‌شود. */
   from: z.coerce.date().optional(),
   to: z.coerce.date().optional(),
   page: z.coerce.number().int().min(1).default(1),
@@ -104,7 +91,6 @@ export type EmployeeCreateInput = z.infer<typeof employeeCreateSchema>;
 export type EmployeeUpdateInput = z.infer<typeof employeeUpdateSchema>;
 export type TransactionCreateInput = z.infer<typeof transactionCreateSchema>;
 
-/** مبلغ استاندارد یک تراکنش بر اساس تعداد توکن. */
 export function expectedAmountRial(tokens: number): number {
   return tokens * TOKEN_VALUE_RIAL;
 }

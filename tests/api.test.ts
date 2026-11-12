@@ -2,13 +2,8 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { TOKEN_VALUE_RIAL } from "@/lib/config";
 import type { EmployeeDto, StatsDto } from "@/lib/dto";
-
-/**
- * تست لایه‌ی HTTP: همان مسیری که مرورگر می‌رود، با DB موقت جدا.
- * `DATABASE_FILE` قبل از import ماژول‌ها ست می‌شود چون مسیر DB در زمان
- * load شدن `lib/db` خوانده می‌شود.
- */
 
 let dir: string;
 let statsRoute: typeof import("@/app/api/stats/route");
@@ -45,7 +40,6 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  // connection کش‌شده فایل را قفل نگه می‌دارد، پس اول بسته می‌شود.
   const { closeDb } = await import("@/lib/db");
   closeDb();
   fs.rmSync(dir, { recursive: true, force: true });
@@ -133,7 +127,7 @@ describe("POST /api/transactions", () => {
     const res = await transactionsRoute.POST(
       post("/transactions", { employeeId: hamed.id, type: "grant", tokens: 4, amountRial: 1, description: "پاداش" }),
     );
-    expect((await jsonOf<{ amountRial: number }>(res)).amountRial).toBe(20000);
+    expect((await jsonOf<{ amountRial: number }>(res)).amountRial).toBe(4 * TOKEN_VALUE_RIAL);
   });
 
   it("توضیحات خالی 422 با پیام فارسی می‌دهد", async () => {

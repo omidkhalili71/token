@@ -1,6 +1,5 @@
 import { AppError } from "./errors";
 
-/** بدنه‌ی JSON را می‌خواند؛ ورودی خراب به جای SyntaxError خام، پیام فارسی می‌دهد. */
 export async function readJson(req: Request): Promise<unknown> {
   try {
     return await req.json();
@@ -9,10 +8,6 @@ export async function readJson(req: Request): Promise<unknown> {
   }
 }
 
-/**
- * پارامترهای query را با همان اسکیمای Zod اعتبارسنجی می‌کند.
- * از `new URL` استفاده می‌کند نه `req.nextUrl`، تا handler در تست هم قابل صدا زدن باشد.
- */
 export function parseQuery<T>(req: Request, schema: { parse: (value: unknown) => T }): T {
   const params = new URL(req.url).searchParams;
   return schema.parse(Object.fromEntries(params));

@@ -68,7 +68,7 @@ tests/        تست‌های Vitest (قوانین کسب‌وکار، API، ت�
 - `client/jalali.ts` — لایه‌ی شمسی: تبدیل UTC↔شمسی و شبکه‌ی ماه تقویم.
 - `client/use-debounced-value.ts` — تأخیر ۳۰۰ms روی جستجو.
 - `format.ts` — ارقام فارسی، جداکننده‌ی هزارگان، ریال، تاریخ و ساعت شمسی.
-- `config.ts` — نرخ توکن (`TOKEN_VALUE_RIAL = 5000`) و اندازه‌ی صفحه‌ی تاریخچه.
+- `config.ts` — نرخ توکن (`TOKEN_VALUE_RIAL = 100000`) و اندازه‌ی صفحه‌ی تاریخچه.
 - `dto.ts` — شکل داده‌ی exchanged بین API و UI.
 
 ### `components/`

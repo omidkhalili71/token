@@ -1,4 +1,3 @@
-/** آیکون‌های SVG داخلی — بدون وابستگی به کتابخانه‌ی آیکون. */
 type IconProps = { className?: string };
 
 const base = "h-5 w-5";
@@ -119,13 +118,6 @@ export const CalendarIcon = (p: IconProps) => (
 export const ChevronDownIcon = (p: IconProps) => (
   <Svg {...p}>
     <path d="m6 9.5 6 6 6-6" />
-  </Svg>
-);
-
-export const BellIcon = (p: IconProps) => (
-  <Svg {...p}>
-    <path d="M18 9a6 6 0 1 0-12 0c0 5-2 6-2 6h16s-2-1-2-6Z" />
-    <path d="M13.7 20a2.2 2.2 0 0 1-3.4 0" />
   </Svg>
 );
 

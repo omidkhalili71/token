@@ -18,21 +18,12 @@ const STATUS_OPTIONS: { value: EmployeeStatus; label: string }[] = [
   { value: "inactive", label: "غیرفعال" },
 ];
 
-/**
- * نوع مقادیر فرم = ورودی اسکیمای مشترک. تبدیل‌ها (رقم فارسی، رشته‌ی خالی به
- * undefined) داخل خود اسکیمای Zod انجام می‌شوند، پس RHF با شکل «قبل از تبدیل» کار می‌کند.
- */
 type EmployeeForm = z.input<typeof employeeCreateSchema>;
 
-/**
- * مودال «افزودن همکار» و «ویرایش همکار» (بخش ۴.۳ از spec)؛
- * افزودن، همان فرم خالی است با یک فیلد اضافه برای موجودی اولیه.
- */
 export function EmployeeModal({
   employee,
   onClose,
 }: {
-  /** اگر داده نشود، حالت افزودن است. */
   employee?: EmployeeDto;
   onClose: () => void;
 }) {
@@ -46,9 +37,6 @@ export function EmployeeModal({
     watch,
     formState: { errors },
   } = useForm<EmployeeForm>({
-    // هر دو حالت با همان اسکیمای API اعتبارسنجی می‌شوند (قانون ۶.۷).
-    // در ویرایش فیلد initialTokens اصلاً رندر نمی‌شود، پس undefined می‌ماند
-    // و اعتبارسنجی معادل employeeUpdateSchema سمت سرور است.
     resolver: zodResolver(employeeCreateSchema),
     defaultValues: {
       fullName: employee?.fullName ?? "",
@@ -61,7 +49,6 @@ export function EmployeeModal({
   const [previewName, previewAvatar] = watch(["fullName", "avatarUrl"]);
 
   const onSubmit = handleSubmit((values) => {
-    // در حالت ویرایش initialTokens ارسال نمی‌شود: اسکیمای PATCH آن را نمی‌پذیرد.
     const payload: EmployeePayload = isCreate
       ? values
       : {
@@ -147,7 +134,6 @@ export function EmployeeModal({
                 aria-invalid={Boolean(errors.initialTokens)}
                 placeholder="۰"
                 className={inputClass}
-                // فیلد اختیاری است: خالی باید undefined شود نه NaN، وگرنه اسکیما خطای «باید عدد باشد» می‌دهد.
                 {...register("initialTokens", {
                   setValueAs: (value) => {
                     const digits = toLatinDigits(String(value ?? "").trim());

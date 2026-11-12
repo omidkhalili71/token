@@ -40,7 +40,6 @@ describe("تقویم شمسی", () => {
 
   it("نمایش تاریخ و ساعت، فارسی و با فرمت spec است", () => {
     const rendered = formatJalaliDateTime("2026-11-11T10:00:00.000Z");
-    // ساعت به منطقه‌ی زمانی محلی بستگی دارد، پس فقط قالب و ارقام فارسی بررسی می‌شوند.
     expect(rendered).toMatch(/^۱۴۰۵\/۰۸\/۲۰ - [۰-۹]{2}:[۰-۹]{2}$/);
   });
 
@@ -53,7 +52,6 @@ describe("تقویم شمسی", () => {
 });
 
 describe("فیلتر پیش‌فرض تاریخچه روی داده‌ی seed", () => {
-  /** سرویس تاریخچه Date می‌گیرد؛ تبدیل رشته‌ی query به Date کار لایه‌ی API است. */
   const monthRange = () => {
     const { from, to } = currentPersianMonth();
     return { from: new Date(dayToIso(from)), to: new Date(dayToIso(to)), pageSize: 500 };

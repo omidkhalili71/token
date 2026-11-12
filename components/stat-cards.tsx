@@ -4,7 +4,6 @@ import { AlertIcon, CartIcon, ChartIcon, PlusIcon, UsersIcon } from "@/component
 import { useStats } from "@/lib/client/queries";
 import { formatNumber } from "@/lib/format";
 
-/** ترتیب DOM در RTL: کارت اول راست‌ترین قرار می‌گیرد، همان مثل طراحی. */
 const CARDS = [
   { key: "activeEmployees", label: "تعداد همکاران فعال", Icon: UsersIcon, tone: "bg-info-soft text-info" },
   { key: "grantedTokens", label: "توکن‌های ثبت شده", Icon: PlusIcon, tone: "bg-warn-soft text-warn" },

@@ -7,7 +7,6 @@ import { toLatinDigits } from "../format";
 import { expectedAmountRial, type EmployeeCreateInput, type EmployeeUpdateInput } from "../validation";
 import type { EmployeeDto } from "../dto";
 
-/** همکار حذف‌شده از لیست‌ها بیرون می‌ماند ولی ردیفش در DB می‌ماند. */
 const notDeleted = isNull(employees.deletedAt);
 
 const employeeColumns = {
@@ -19,7 +18,6 @@ const employeeColumns = {
   balance: balanceSql,
 } as const;
 
-/** جستجو روی نام و کد پرسنلی؛ ارقام فارسی قبل از تطبیق به انگلیسی تبدیل می‌شوند. */
 export function listEmployees(db: Db, query = ""): EmployeeDto[] {
   const q = toLatinDigits(query).trim();
   const search = q
@@ -48,7 +46,6 @@ export function getEmployee(db: Db, id: number): EmployeeDto {
   return row as EmployeeDto;
 }
 
-/** خطای unique بودن SQLite را به AppError معنایی تبدیل می‌کند. */
 function rethrowUnique(error: unknown): never {
   const code = (error as { code?: string })?.code ?? "";
   if (String(code).includes("SQLITE_CONSTRAINT_UNIQUE")) {
@@ -116,7 +113,6 @@ export function updateEmployee(db: Db, id: number, input: EmployeeUpdateInput): 
   return getEmployee(db, id);
 }
 
-/** soft delete — تراکنش‌های این همکار برای تاریخچه باقی می‌مانند. */
 export function deleteEmployee(db: Db, id: number): void {
   const changed = db
     .update(employees)

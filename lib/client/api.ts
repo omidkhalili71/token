@@ -1,4 +1,3 @@
-/** خطای سمت کلاینت با پیام فارسی آماده‌ی نمایش. */
 export class ClientApiError extends Error {
   constructor(
     message: string,

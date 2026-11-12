@@ -12,7 +12,6 @@ export function useToast() {
   return useContext(ToastContext);
 }
 
-/** Toast های ساده و self-dismiss برای تأیید ثبت تراکنش و خطاها. */
 export function ToastProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<Toast[]>([]);
   const nextId = useRef(1);

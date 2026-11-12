@@ -3,10 +3,6 @@
 import { useEffect, useId, useRef } from "react";
 import { CloseIcon } from "@/components/icons";
 
-/**
- * دیالوگ قابل استفاده‌ی مجدد: Esc و کلیک روی پس‌زمینه می‌بندند،
- * focus trap دارد و برای technology کم‌بینا `aria-modal` و عنوان مرتبط دارد.
- */
 export function Modal({
   title,
   onClose,
@@ -56,7 +52,6 @@ export function Modal({
       }
     }
 
-    // listener روی document: اگر focus از پنل بیرون رفته باشد هم Esc کار کند.
     document.addEventListener("keydown", onKeyDown);
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";

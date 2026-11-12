@@ -12,10 +12,6 @@ import {
   type PersianRange,
 } from "@/lib/client/jalali";
 
-/**
- * انتخاب بازه‌ی تاریخ در تقویم شمسی: کلیک اول «از»، کلیک دوم «تا».
- * پیش‌فرض روی ماه جاری شمسی است (بخش ۴.۴ از spec).
- */
 export function JalaliRangePicker({
   range,
   onChange,
@@ -76,7 +72,6 @@ export function JalaliRangePicker({
         <span className="whitespace-nowrap">
           از تاریخ {formatJalaliDate(range.from)} - {formatJalaliDate(range.to)}
         </span>
-        {/* آیکون بعد از متن می‌آید تا در RTL سمت چپ کادر بنشیند (مطابق طراحی) */}
         <CalendarIcon className="ms-auto h-4 w-4 shrink-0 text-muted" />
       </button>
 
@@ -127,7 +122,6 @@ export function JalaliRangePicker({
                   type="button"
                   onClick={() => pickDay(date)}
                   aria-pressed={isEdge}
-                  // متن دکمه فقط شماره‌ی روز است، پس تاریخ کامل را به مرورگر می‌گوییم.
                   aria-label={formatJalaliDate(date)}
                   className={`h-8 rounded-lg text-xs font-bold transition ${
                     outside ? "text-muted/40" : "text-ink"

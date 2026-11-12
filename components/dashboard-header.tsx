@@ -1,7 +1,6 @@
 import { Avatar } from "@/components/avatar";
-import { BellIcon, ChevronDownIcon } from "@/components/icons";
+import { ChevronDownIcon } from "@/components/icons";
 
-/** هدر صفحه: عنوان و زیرعنوان، به‌همراه آواتار ادمین و زنگ (فعلاً فقط ظاهری). */
 export function DashboardHeader() {
   return (
     <header className="mx-auto flex w-full max-w-6xl items-start justify-between gap-4 px-4 pt-6 sm:px-6 sm:pt-8">
@@ -12,18 +11,7 @@ export function DashboardHeader() {
         </p>
       </div>
 
-      {/* ترتیب DOM در RTL: زنگ راست‌ترین، بعد آواتار و فلش dropdown چپ‌ترین (مطابق design.png) */}
       <div className="flex shrink-0 items-center gap-3 pt-1">
-        <button
-          type="button"
-          className="relative rounded-full p-1.5 text-muted transition hover:bg-white/70"
-          aria-label="اعلان‌ها (به‌زودی)"
-          disabled
-        >
-          <BellIcon className="h-6 w-6" />
-          <span className="absolute end-1.5 top-1.5 h-2.5 w-2.5 rounded-full bg-danger ring-2 ring-canvas" />
-        </button>
-
         <Avatar name="مدیر سیستم" size="md" />
 
         <button

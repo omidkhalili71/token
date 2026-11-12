@@ -1,5 +1,3 @@
-/** اجزای کوچک و تکراری UI. */
-
 export function SectionCard({
   children,
   className = "",
@@ -49,7 +47,6 @@ export function Skeleton({ className = "h-4 w-24" }: { className?: string }) {
   return <span className={`block animate-pulse rounded-lg bg-canvas ${className}`} aria-hidden="true" />;
 }
 
-/** حالت خالی یا خطا برای لیست‌ها. */
 export function StateMessage({
   title,
   description,

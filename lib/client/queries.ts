@@ -7,7 +7,6 @@ import type { EmployeeDto, StatsDto, TransactionDto } from "@/lib/dto";
 import type { TransactionType } from "@/lib/dto";
 
 export type TransactionFilters = {
-  /** رشته‌ی خالی یعنی «همه» */
   type?: TransactionType | "";
   from?: string;
   to?: string;
@@ -67,7 +66,6 @@ export function useTransactionMutation() {
   const client = useQueryClient();
   return useMutation({
     mutationFn: (payload: TransactionPayload) => api.post<{ balanceAfter: number }>("/api/transactions", payload),
-    // ثبت تراکنش روی هر سه بخش اثر دارد: کارت‌ها، موجودی لیست و تاریخچه.
     onSuccess: () => client.invalidateQueries(),
   });
 }
@@ -97,7 +95,6 @@ export function useEmployeeDelete() {
   });
 }
 
-/** بعد از موفقیت، همه‌ی query ها دوباره گرفته می‌شوند (بخش ۴.۵ از spec). */
 export function useRefreshAll() {
   const client = useQueryClient();
   return useCallback(() => client.invalidateQueries(), [client]);

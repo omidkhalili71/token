@@ -1,7 +1,3 @@
-/** ثابت‌های پیکربندی که هم سمت سرور و هم سمت کلاینت استفاده می‌شوند. */
+export const TOKEN_VALUE_RIAL = 100000;
 
-/** نرخ هر توکن به ریال. از طراحی: ۳ توکن = ۱۵٬۰۰۰ ریال. */
-export const TOKEN_VALUE_RIAL = 5000;
-
-/** تعداد ردیف‌های تاریخچه در هر صفحه. */
 export const TRANSACTIONS_PAGE_SIZE = 20;

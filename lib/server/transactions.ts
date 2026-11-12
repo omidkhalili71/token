@@ -26,10 +26,6 @@ export type TransactionFilters = {
   pageSize?: number;
 };
 
-/**
- * تاریخچه با جدیدترین اول. تراکنش همکار حذف‌شده هم نمایش داده می‌شود،
- * چون soft delete دقیقاً برای حفظ همین تاریخچه است.
- */
 export function listTransactions(
   db: Db,
   filters: TransactionFilters = {},
@@ -40,7 +36,6 @@ export function listTransactions(
   const conditions = [];
   if (filters.type) conditions.push(eq(transactions.type, filters.type));
   if (filters.from) conditions.push(gte(transactions.createdAt, filters.from));
-  // «تا تاریخ» شامل کل آن روز است: مرز بالا به اولین لحظه‌ی روز بعد می‌رسد.
   if (filters.to) conditions.push(lte(transactions.createdAt, endOfDay(filters.to)));
 
   const where = conditions.length ? and(...conditions) : undefined;
@@ -81,17 +76,11 @@ export type CreateTransactionResult = {
   amountRial: number;
   description: string;
   createdAt: string;
-  /** موجودی بعد از ثبت، برای refresh نکردن کامل لیست هم لازم است. */
   balanceAfter: number;
 };
 
-/**
- * ثبت تراکنش. چک موجودی و درج ردیف در یک transaction DB انجام می‌شود
- * (قانون ۶.۳) تا دو درخواست همزمان نتوانند بیش از موجودی مصرف کنند.
- */
 export function createTransaction(db: Db, input: TransactionCreateInput, now = new Date()): CreateTransactionResult {
   return db.transaction((tx) => {
-    /** خواندن موجودی داخل همان transaction، با همان فرمول مشترک. */
     const readBalance = (employeeId: number) =>
       Number(
         tx
@@ -125,7 +114,6 @@ export function createTransaction(db: Db, input: TransactionCreateInput, now = n
       }
     }
 
-    // grant همیشه به نرخ استاندارد؛ spend می‌تواند مبلغ دستی کاربر را داشته باشد.
     const amountRial =
       input.type === "grant" || input.amountRial === undefined
         ? expectedAmountRial(input.tokens)

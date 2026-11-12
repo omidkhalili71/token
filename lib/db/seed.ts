@@ -12,10 +12,6 @@ type SeedEmployee = {
   entries: SeedEntry[];
 };
 
-/**
- * همان پنج همکار طراحی. موجودی هر فرد تفاضل تراکنش‌هاست:
- * ۱۲، ۸، ۳۵، ۰ و ۲۱ → اهدا شده ۱۲۹، مصرف شده ۵۳، باقی‌مانده ۷۶.
- */
 const SEED_EMPLOYEES: SeedEmployee[] = [
   {
     fullName: "علی رضایی",
@@ -64,13 +60,8 @@ const SEED_EMPLOYEES: SeedEmployee[] = [
   },
 ];
 
-/** ساعت‌های متنوع تا ترتیب تاریخچه در نمایش طبیعی به نظر برسد. */
 const HOURS = [9, 10, 11, 12, 14, 15, 16, 17, 18, 13, 8, 19];
 
-/**
- * تاریخ‌ها داخل ماه جاری شمسی می‌افتند: روزها بین اول ماه تا امروز تقسیم
- * می‌شوند و اگر ساعت از «الان» عبور کند، به عقب clamp می‌شود.
- */
 export function spreadDatesWithinPersianMonth(count: number, now = new Date()): Date[] {
   const monthStart = startOfMonth(now);
   const span = Math.max(1, differenceInCalendarDays(now, monthStart) + 1);
@@ -85,7 +76,6 @@ export function spreadDatesWithinPersianMonth(count: number, now = new Date()): 
   });
 }
 
-/** تعداد همکاران حذف‌نشده. */
 export function countAliveEmployees(db: Db): number {
   const row = db.select({ n: sql<number>`count(*)` }).from(employees).where(isNullDeleted()).get();
   return Number(row?.n ?? 0);
@@ -95,7 +85,6 @@ function isNullDeleted() {
   return sql`${employees.deletedAt} is null`;
 }
 
-/** درج داده‌ی نمونه. اگر همکار زنده‌ای وجود داشت، هیچ کاری نمی‌کند و false برمی‌گرداند. */
 export function seedDatabase(db: Db, now = new Date()): boolean {
   if (countAliveEmployees(db) > 0) return false;
 

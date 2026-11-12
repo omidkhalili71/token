@@ -4,7 +4,6 @@ import { useState } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ToastProvider } from "@/components/toast";
 
-/** Provider های مشترک سراسری: TanStack Query و Toast. */
 export function Providers({ children }: { children: React.ReactNode }) {
   const [client] = useState(
     () =>

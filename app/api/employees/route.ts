@@ -6,7 +6,6 @@ import { parseQuery, readJson } from "@/lib/server/http";
 
 export const dynamic = "force-dynamic";
 
-/** لیست همکاران با موجودی محاسبه‌شده؛ `q` روی نام و کد پرسنلی. */
 export function GET(req: Request) {
   return route(() => {
     const { q } = parseQuery(req, employeesQuerySchema);

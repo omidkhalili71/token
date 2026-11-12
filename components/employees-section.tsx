@@ -141,7 +141,6 @@ function EmployeeRow({ employee, actions }: { employee: EmployeeDto; actions: Em
         )}
       </td>
       <td className="px-3 py-3">
-        {/* ترتیب DOM در RTL: حذف راست‌ترین و «خرج توکن» چپ‌ترین، مطابق طراحی */}
         <div className="flex items-center gap-2">
           <button
             type="button"

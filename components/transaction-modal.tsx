@@ -27,10 +27,8 @@ export function TransactionModal({
   const maxTokens = isSpend ? employee.balance : 100000;
   const toast = useToast();
   const mutation = useTransactionMutation();
-  /** تا کاربر مبلغ را دست نزده، مبلغ خودکار = تعداد × نرخ محاسبه می‌شود. */
   const [amountEdited, setAmountEdited] = useState(false);
 
-  // سقف موجودی فقط سمت کلاینت معلوم است؛ سرور همان چک را دوباره انجام می‌دهد.
   const schema = useMemo(
     () =>
       transactionCreateSchema.superRefine((value, ctx) => {
@@ -75,7 +73,6 @@ export function TransactionModal({
   }, [isSpend, amountEdited, tokens, setValue]);
 
   function step(delta: number) {
-    // getValues به‌جای مقدار watch: دو کلیک پشت‌هم نباید از closure کهنه بخوانند.
     const current = Number(getValues("tokens"));
     const next = Math.min(maxTokens, Math.max(1, (Number.isFinite(current) ? current : 0) + delta));
     setValue("tokens", next, { shouldValidate: true, shouldDirty: true });
@@ -105,7 +102,6 @@ export function TransactionModal({
     <Modal title={isSpend ? "خرج کردن توکن" : "ثبت توکن"} onClose={onClose}>
       <form onSubmit={onSubmit} noValidate>
         <div className="grid gap-5 sm:grid-cols-2">
-          {/* در RTL آیتم اول راست‌ترین ستون می‌شود: کارت همکار راست، تعداد توکن چپ (مطابق طراحی) */}
           <div className="order-1">
             <div className="flex h-full items-center gap-3 rounded-2xl bg-canvas/70 p-3 ring-1 ring-line">
               <Avatar name={employee.fullName} src={employee.avatarUrl} size="lg" />
@@ -126,7 +122,6 @@ export function TransactionModal({
               error={errors.tokens?.message}
             >
               <div className="flex items-stretch gap-2">
-                {/* + اول می‌آید تا در RTL سمت راست قرار بگیرد (− چپ) */}
                 <button
                   type="button"
                   onClick={() => step(1)}
@@ -217,7 +212,6 @@ export function TransactionModal({
         ) : null}
 
         <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-          {/* دکمه‌ی اصلی اول می‌آید تا در RTL راست‌ترین باشد؛ در موبایل هم بالای «انصراف» قرار می‌گیرد */}
           <button
             type="submit"
             disabled={pending}

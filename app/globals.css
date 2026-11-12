@@ -38,7 +38,6 @@
     font-feature-settings: "ss01";
   }
 
-  /* اعداد داخل جدول‌ها هم‌عرض باشند تا ستون‌ها نلرزند. */
   table {
     font-variant-numeric: tabular-nums;
   }
@@ -48,7 +47,6 @@
     outline-offset: 2px;
   }
 
-  /* اسکرول‌بار نازک برای جدول‌ها در موبایل. */
   .thin-scroll::-webkit-scrollbar {
     height: 6px;
   }

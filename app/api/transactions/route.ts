@@ -6,11 +6,6 @@ import { parseQuery, readJson } from "@/lib/server/http";
 
 export const dynamic = "force-dynamic";
 
-/**
- * فقط GET و POST اینجا وجود دارد: تراکنش‌ها غیرقابل ویرایش و حذف‌اند (قانون ۶.۶)
- * و افزودن PUT/PATCH/DELETE عمداً انجام نشده است.
- */
-
 export function GET(req: Request) {
   return route(() => {
     const { type, from, to, page } = parseQuery(req, transactionsQuerySchema);

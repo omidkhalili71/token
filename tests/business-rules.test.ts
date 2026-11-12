@@ -10,7 +10,6 @@ import { createTransaction, listTransactions } from "@/lib/server/transactions";
 import { getStats } from "@/lib/server/stats";
 import { transactionCreateSchema, employeeCreateSchema } from "@/lib/validation";
 
-/** DB در حافظه با همان migration های واقعی پروژه. */
 let db: Db;
 
 function employeeByCode(code: string) {
@@ -118,7 +117,6 @@ describe("قانون ۳ — ثبت و چک موجودی در یک transaction", 
     const results = [spend(said.id, 20), spend(said.id, 15)];
     expect(results.map((r) => r.balanceAfter)).toEqual([initial - 20, initial - 35]);
     expect(computeBalance(db, said.id)).toBe(0);
-    // مصرف بعدی باید رد شود چون موجودی تمام شده است.
     expect(() => spend(said.id, 1)).toThrowError(/موجودی کافی نیست/);
   });
 
@@ -220,12 +218,10 @@ describe("قانون ۶ — تراکنش‌ها غیرقابل ویرایش و �
     deleteEmployee(db, created.id);
     expect(transactionCount()).toBe(before + 1);
     expect(listEmployees(db).some((e) => e.id === created.id)).toBe(false);
-    // تراکنش همکار حذف‌شده همچنان در تاریخچه دیده می‌شود.
     expect(listTransactions(db, { pageSize: 500 }).items.some((t) => t.employeeId === created.id)).toBe(true);
   });
 });
 
-/** کد خطای AppError را برمی‌گرداند تا assertion ها خوانا بمانند. */
 function thrownCode(action: () => unknown): string | null {
   try {
     action();

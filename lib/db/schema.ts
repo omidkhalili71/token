@@ -1,6 +1,5 @@
 import { index, integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
-/** همکاران. موجودی اینجا ذخیره نمی‌شود؛ همیشه از تراکنش‌ها محاسبه می‌شود. */
 export const employees = sqliteTable("employees", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   personnelCode: text("personnel_code").notNull().unique(),
@@ -9,7 +8,6 @@ export const employees = sqliteTable("employees", {
   status: text("status", { enum: ["active", "inactive"] })
     .notNull()
     .default("active"),
-  /** soft delete — تاریخچه‌ی تراکنش‌ها حفظ می‌شود. */
   deletedAt: integer("deleted_at", { mode: "timestamp_ms" }),
   createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
 });
@@ -22,9 +20,7 @@ export const transactions = sqliteTable(
       .notNull()
       .references(() => employees.id),
     type: text("type", { enum: ["spend", "grant"] }).notNull(),
-    /** همیشه مثبت. */
     tokens: integer("tokens").notNull(),
-    /** همیشه مثبت. */
     amountRial: integer("amount_rial").notNull(),
     description: text("description").notNull(),
     createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),

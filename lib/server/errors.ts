@@ -1,6 +1,5 @@
 import { ZodError } from "zod";
 
-/** خطای برنامه با کد machine-readable و پیام فارسی قابل نمایش. */
 export class AppError extends Error {
   constructor(
     readonly code: ErrorCode,
@@ -25,7 +24,6 @@ export function errorBody(code: ErrorCode, message: string) {
   return { error: { code, message } };
 }
 
-/** هر خطا را به فرمت واحد `{ error: { code, message } }` تبدیل می‌کند. */
 export function toErrorResponse(error: unknown): Response {
   if (error instanceof AppError) {
     return Response.json(errorBody(error.code, error.message), { status: error.status });
@@ -39,10 +37,6 @@ export function toErrorResponse(error: unknown): Response {
   return Response.json(errorBody("internal_error", "خطای غیرمنتظره‌ای رخ داد. دوباره تلاش کنید."), { status: 500 });
 }
 
-/**
- * پوشش try/catch برای route handler ها. async است تا خطای داخل
- * `await req.json()` هم به فرمت واحد خطا برسد.
- */
 export async function route(handler: () => Response | Promise<Response>): Promise<Response> {
   try {
     return await handler();

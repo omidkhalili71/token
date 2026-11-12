@@ -6,10 +6,6 @@ import { useEmployeeDelete } from "@/lib/client/queries";
 import { formatNumber, toPersianDigits } from "@/lib/format";
 import type { EmployeeDto } from "@/lib/dto";
 
-/**
- * تأیید حذف (بخش ۴.۳). حذف از نوع soft delete است، پس به کاربر گفته می‌شود
- * که تراکنش‌های این فرد در تاریخچه می‌ماند و فقط از لیست بیرون می‌رود.
- */
 export function DeleteEmployeeModal({
   employee,
   onClose,

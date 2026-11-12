@@ -1,5 +1,3 @@
-/** شکل داده‌هایی که بین API و کلاینت رد و بدل می‌شود. */
-
 export type EmployeeStatus = "active" | "inactive";
 export type TransactionType = "grant" | "spend";
 
@@ -9,7 +7,6 @@ export type EmployeeDto = {
   personnelCode: string;
   avatarUrl: string | null;
   status: EmployeeStatus;
-  /** همیشه محاسبه‌شده: SUM(grant) − SUM(spend) */
   balance: number;
 };
 
@@ -21,7 +18,6 @@ export type TransactionDto = {
   tokens: number;
   amountRial: number;
   description: string;
-  /** ISO میلادی؛ تبدیل شمسی سمت کلاینت */
   createdAt: string;
 };
 
