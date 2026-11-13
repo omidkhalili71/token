@@ -118,7 +118,7 @@ export function EmployeeModal({
             label="شماره موبایل (اختیاری)"
             htmlFor="mobile"
             error={errors.mobile?.message}
-            hint="با این شماره وارد سامانه می‌شود و حسابش با رمز پیش‌فرض ۱۲۳۴۵۶ ساخته می‌شود."
+            hint="با این شماره وارد سامانه می‌شود و حساب با رمز پیش‌فرض ۱۲۳۴۵۶ ساخته می‌شود."
           >
             <input
               id="mobile"
