@@ -4,6 +4,7 @@ import path from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { DEFAULT_PASSWORD, TOKEN_VALUE_TOMAN } from "@/lib/config";
 import type { EmployeeDto, StatsDto } from "@/lib/dto";
+import { seedSampleData } from "./fixtures";
 
 let dir: string;
 let accessToken = "";
@@ -39,7 +40,9 @@ beforeAll(async () => {
   process.env.DATABASE_FILE = path.join(dir, "app.db");
 
   const { bootstrapDatabase } = await import("@/lib/db/bootstrap");
-  bootstrapDatabase(process.env.DATABASE_FILE).sqlite.close();
+  const { db, sqlite } = bootstrapDatabase(process.env.DATABASE_FILE);
+  seedSampleData(db);
+  sqlite.close();
 
   statsRoute = await import("@/app/api/stats/route");
   employeesRoute = await import("@/app/api/employees/route");

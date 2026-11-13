@@ -7,6 +7,7 @@ import { DEFAULT_PASSWORD } from "@/lib/config";
 import type { Db } from "@/lib/db";
 import { users } from "@/lib/db/schema";
 import { ensureDefaultAdmin } from "@/lib/db/seed";
+import { seedSampleData } from "./fixtures";
 import type { SessionDto, UserDto } from "@/lib/dto";
 
 let dir: string;
@@ -70,7 +71,9 @@ beforeAll(async () => {
   process.env.DATABASE_FILE = path.join(dir, "app.db");
 
   const { bootstrapDatabase } = await import("@/lib/db/bootstrap");
-  bootstrapDatabase(process.env.DATABASE_FILE).sqlite.close();
+  const { db, sqlite } = bootstrapDatabase(process.env.DATABASE_FILE);
+  seedSampleData(db);
+  sqlite.close();
 
   loginRoute = await import("@/app/api/auth/login/route");
   refreshRoute = await import("@/app/api/auth/refresh/route");

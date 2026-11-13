@@ -1,6 +1,7 @@
 import { beforeAll, describe, expect, it } from "vitest";
 import { sql } from "drizzle-orm";
 import { bootstrapDatabase } from "@/lib/db/bootstrap";
+import { seedSampleData } from "./fixtures";
 import { transactions } from "@/lib/db/schema";
 import type { Db } from "@/lib/db";
 import { AppError } from "@/lib/server/errors";
@@ -29,6 +30,7 @@ function transactionCount(): number {
 
 beforeAll(() => {
   db = bootstrapDatabase(":memory:").db;
+  seedSampleData(db);
 });
 
 describe("داده‌ی seed و فرمول کارت‌ها", () => {

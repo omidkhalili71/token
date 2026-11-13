@@ -10,6 +10,7 @@ import {
   shiftMonth,
 } from "@/lib/client/jalali";
 import { bootstrapDatabase } from "@/lib/db/bootstrap";
+import { seedSampleData } from "./fixtures";
 import { listTransactions } from "@/lib/server/transactions";
 
 describe("تقویم شمسی", () => {
@@ -59,6 +60,7 @@ describe("فیلتر پیش‌فرض تاریخچه روی داده‌ی seed", 
 
   it("همه‌ی تراکنش‌های seed داخل ماه جاری شمسی هستند", () => {
     const { db } = bootstrapDatabase(":memory:");
+    seedSampleData(db);
     const all = listTransactions(db, { pageSize: 500 });
     const inMonth = listTransactions(db, monthRange());
 
@@ -68,6 +70,7 @@ describe("فیلتر پیش‌فرض تاریخچه روی داده‌ی seed", 
 
   it("فیلتر نوع، فقط همان نوع را برمی‌گرداند و با بازه‌ی ماه جمع می‌شود", () => {
     const { db } = bootstrapDatabase(":memory:");
+    seedSampleData(db);
     const range = monthRange();
     const spends = listTransactions(db, { ...range, type: "spend" });
     const grants = listTransactions(db, { ...range, type: "grant" });

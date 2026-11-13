@@ -5,6 +5,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { DEFAULT_PASSWORD } from "@/lib/config";
 import { can, ROLE_LABELS } from "@/lib/permissions";
 import type { EmployeeDto, SessionDto, UserRole } from "@/lib/dto";
+import { seedSampleData } from "./fixtures";
 
 let dir: string;
 
@@ -79,7 +80,9 @@ beforeAll(async () => {
   process.env.DATABASE_FILE = path.join(dir, "app.db");
 
   const { bootstrapDatabase } = await import("@/lib/db/bootstrap");
-  bootstrapDatabase(process.env.DATABASE_FILE).sqlite.close();
+  const { db, sqlite } = bootstrapDatabase(process.env.DATABASE_FILE);
+  seedSampleData(db);
+  sqlite.close();
 });
 
 afterAll(async () => {
